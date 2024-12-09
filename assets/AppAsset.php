@@ -27,7 +27,10 @@ class AppAsset extends AssetBundle
             'themes/skote/assets/libs/jquery/jquery.min.js', 
             'position' => \yii\web\View::POS_HEAD
         ],
-        'themes/skote/assets/libs/bootstrap/js/bootstrap.bundle.min.js',
+        [
+            'themes/skote/assets/libs/bootstrap/js/bootstrap.bundle.min.js', 
+            'position' => \yii\web\View::POS_HEAD
+        ],
         'themes/skote/assets/libs/metismenu/metisMenu.min.js',
         'themes/skote/assets/libs/simplebar/simplebar.min.js',
         'themes/skote/assets/libs/node-waves/waves.min.js',

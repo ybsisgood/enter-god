@@ -51,6 +51,10 @@ use kartik\datetime\DateTimePicker;
         ]
     ]); ?>
 
+    <?=  $form->field($model, 'whitelist_ip')->textInput(['maxlength' => true])->hint('Enter IP with comma separated. Ex: 1.1.1.1, 2.2.2.2') ?>
+
+    <?=  $form->field($model, 'whitelist_domain')->textInput(['maxlength' => true])->hint('Enter Domain with comma separated. Ex: domain1.com, domain2.com') ?>
+
     <div class="form-group">
         <?= Html::submitButton('Save Data', ['class' => 'btn btn-success waves-effect waves-light', 'data' => ['disabled-text' => 'Please Wait']]) ?>
         <?= Html::resetButton('Reset', ['class' => 'btn btn-outline-secondary waves-effect waves-light']) ?>

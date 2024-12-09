@@ -12,6 +12,11 @@ use kartik\grid\GridView;
 $this->title = 'Apps';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
+<style>
+    .align-items-middle {
+        vertical-align: middle !important;
+    }
+</style>
 <div class="apps-index">
     <p>
         <?= Html::a('Create Apps', ['create'], ['class' => 'btn btn-success waves-effect waves-light']) ?>
@@ -26,7 +31,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'filterModel' => $searchModel,
                         'responsiveWrap' => false,
                         'options' => [
-                            'class' => 'align-items-middle'
+                            'id' => 'align-items-middle'
                         ],
                         'columns' => [
                             ['class' => 'kartik\grid\SerialColumn'],
@@ -35,7 +40,13 @@ $this->params['breadcrumbs'][] = $this->title;
                             'name',
                             'description:ntext',
                             'code_app',
-                            'status',
+                            [
+                                'attribute' => 'status',
+                                'filter' => Apps::getStatusList(),
+                                'value' => function ($model) {
+                                    return Apps::getStatusList()[$model->status];
+                                }
+                            ],
                             //'status_env',
                             //'pic',
                             //'live_date',
@@ -43,13 +54,30 @@ $this->params['breadcrumbs'][] = $this->title;
                             [
                                 'class' => 'kartik\grid\ActionColumn',
                                 'template' => '{view} {update} {delete}',
+                                'width' => '200px',
                                 'buttons' => [
                                     'view' => function ($url, $model, $key) {
-                                        return Html::a('<i class="fas fa-eye"></i>', $url, [
+                                        return Html::a('<i class="fas fa-eye"></i>', ['view', 'seo_url' => $model->seo_url], [
                                             'class' => 'btn btn-sm btn-primary waves-effect waves-light',
                                             'title' => 'View',
                                         ]);
-                                    }
+                                    },
+                                    'update' => function ($url, $model, $key) {
+                                        return Html::a('<i class="fas fa-pencil-alt"></i>', ['update', 'seo_url' => $model->seo_url], [
+                                            'class' => 'btn btn-sm btn-info waves-effect waves-light',
+                                            'title' => 'Update',
+                                        ]);
+                                    },
+                                    'delete' => function ($url, $model, $key) {
+                                        return Html::a('<i class="fas fa-trash-alt"></i>', $url, [
+                                            'class' => 'btn btn-sm btn-danger waves-effect waves-light',
+                                            'title' => 'Delete',
+                                            'data' => [
+                                                'confirm' => 'Are you sure you want to delete this item?',
+                                                'method' => 'post',
+                                            ],
+                                        ]);
+                                    },
                                 ]
                             ],
                         ],

@@ -9,6 +9,8 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use app\components\GlobalFunction;
+use app\models\Roles;
+use app\models\search\RolesSearch;
 
 /**
  * AppsController implements the CRUD actions for Apps model.
@@ -79,8 +81,6 @@ class AppsController extends Controller
         if ($this->request->isPost) {
             $detailInfo = GlobalFunction::changeLogCreate();
             $model->detail_info = $detailInfo;
-            $detailInfo['change_log']['created_at'] = date('Y-m-d\TH:i:sP', strtotime('now'));
-            $detailInfo['change_log']['created_by'] = Yii::$app->user->identity->username;
             if ($model->load($this->request->post()) && $model->save()) {
                 $model->detail_info = $detailInfo;
                 $model->seo_url = GlobalFunction::slugify($model->name).'-'.$model->id;
@@ -104,16 +104,37 @@ class AppsController extends Controller
      * @return string|\yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionUpdate($id)
+    public function actionUpdate($seo_url)
     {
-        $model = $this->findModel($id);
+        $model = $this->findModelbyUrl($seo_url);
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+        if ($this->request->isPost && $model->load($this->request->post()) && $model->validate()) {
+            if(empty($model->getDirtyAttributes())) {
+                Yii::$app->session->setFlash('success', 'Nothing has been changed.');
+                return $this->redirect(['view', 'seo_url' => $model->seo_url]);
+            }
+            $detailInfo = GlobalFunction::changeLogUpdate($model->detail_info);
+            $model->detail_info = $detailInfo;
+            $model->save();
+            Yii::$app->session->setFlash('success', 'Data has been updated.');
+            return $this->redirect(['view', 'seo_url' => $model->seo_url]);
         }
 
         return $this->render('update', [
             'model' => $model,
+        ]);
+    }
+
+    public function actionRoles($seo_url)
+    {
+        $model = $this->findModelbyUrl($seo_url);
+        $searchModel = new RolesSearch();
+        $dataProvider = $searchModel->search($this->request->queryParams, $model->id);
+
+        return $this->render('roles', [
+            'model' => $model,
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
         ]);
     }
 
@@ -126,9 +147,12 @@ class AppsController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
-
-        return $this->redirect(['index']);
+        $model = $this->findModel($id);
+        $model->status = Apps::STATUS_DELETED;
+        $model->detail_info = GlobalFunction::changeLogDelete($model->detail_info);
+        $model->save();
+        Yii::$app->session->setFlash('success', 'Data has been deleted.');
+        return $this->redirect(Yii::$app->request->referrer);
     }
 
     /**

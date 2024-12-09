@@ -4,7 +4,6 @@
 /** @var string $content */
 
 use app\assets\AppAsset;
-use app\widgets\Alert;
 use yii\bootstrap5\Breadcrumbs;
 use yii\helpers\Html;
 use yii\helpers\Url;
@@ -100,7 +99,6 @@ $this->registerMetaTag(['name' => 'robots', 'content' => Yii::$app->params['robo
                 </div>
                 
             </div>
-            <?= Alert::widget() ?>
             <?= $content ?>
         </div>
     </div>
@@ -123,6 +121,33 @@ $this->registerMetaTag(['name' => 'robots', 'content' => Yii::$app->params['robo
 
 <?= $this->render('_right-sidebar',['baseUrl' => $baseUrl]); ?>
 
+<?php
+$session = Yii::$app->session;
+$flashes = $session->getAllFlashes();
+
+foreach ($flashes as $key => $message) {
+    $session->removeFlash($key);
+    $this->registerJs("
+        const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+        }
+        });
+
+        Toast.fire({
+        icon: '" . $key . "',
+        title: '" . $message . "'
+        })
+    ");
+}
+$session->removeAllFlashes();
+?>
 <?php $this->endBody() ?>
 </body>
 </html>
