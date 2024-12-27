@@ -53,6 +53,17 @@ class GlobalFunction extends Component {
         return $detailInfo;
     }
 
+    public static function changeLogRestore($dataInfo)
+    {   
+        $detailInfo = $dataInfo;
+        $detailInfo['change_log']['deleted_at'] = null;
+        $detailInfo['change_log']['deleted_by'] = null;
+        $detailInfo['change_log']['updated_at'] = gmdate("Y-m-d\TH:i:s\Z");
+        $detailInfo['change_log']['updated_by'] = Yii::$app->user->identity->username;
+        $detailInfo['change_log']['already_restore'] = true;
+        return $detailInfo;
+    }
+
     public static function addLogActivity($table = null, $action = '') {
         $browser = new Browser();
         

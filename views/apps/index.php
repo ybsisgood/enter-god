@@ -12,14 +12,9 @@ use kartik\grid\GridView;
 $this->title = 'Apps';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<style>
-    .align-items-middle {
-        vertical-align: middle !important;
-    }
-</style>
 <div class="apps-index">
     <p>
-        <?= Html::a('Create Apps', ['create'], ['class' => 'btn btn-success waves-effect waves-light']) ?>
+        <?= Html::a('Create Apps', ['create'], ['class' => 'btn btn-success btn-sm waves-effect waves-light']) ?>
     </p>
 
     <div class="row">

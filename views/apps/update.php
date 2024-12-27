@@ -13,7 +13,7 @@ $this->params['breadcrumbs'][] = 'Update';
 <div class="apps-update">
 
     <p>
-        <?= Html::a('Back', ['index'], ['class' => 'btn btn-primary waves-effect waves-light']) ?>
+        <?= Html::a('Back', ['index'], ['class' => 'btn btn-primary btn-sm waves-effect waves-light']) ?>
     </p>
 
     <div class="card">

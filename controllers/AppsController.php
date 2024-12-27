@@ -10,7 +10,10 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use app\components\GlobalFunction;
 use app\models\Roles;
+use app\models\search\PermissionGroupsSearch;
 use app\models\search\RolesSearch;
+use app\models\PermissionGroups;
+use ybsisgood\modules\UserManagement\models\rbacDB\Permission;
 
 /**
  * AppsController implements the CRUD actions for Apps model.
@@ -38,11 +41,6 @@ class AppsController extends Controller
         );
     }
 
-    /**
-     * Lists all Apps models.
-     *
-     * @return string
-     */
     public function actionIndex()
     {
         $searchModel = new AppsSearch();
@@ -54,12 +52,6 @@ class AppsController extends Controller
         ]);
     }
 
-    /**
-     * Displays a single Apps model.
-     * @param int $id ID
-     * @return string
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     public function actionView($seo_url)
     {
         $model = $this->findModelbyUrl($seo_url);
@@ -69,11 +61,6 @@ class AppsController extends Controller
         ]);
     }
 
-    /**
-     * Creates a new Apps model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return string|\yii\web\Response
-     */
     public function actionCreate()
     {
         $model = new Apps();
@@ -85,6 +72,27 @@ class AppsController extends Controller
                 $model->detail_info = $detailInfo;
                 $model->seo_url = GlobalFunction::slugify($model->name).'-'.$model->id;
                 $model->save();
+                $createSuperadmin = new Roles();
+                $createSuperadmin->app_id = $model->id;
+                $createSuperadmin->name = 'Superadmin';
+                $createSuperadmin->code_roles = 'superadmin';
+                $createSuperadmin->status = Roles::STATUS_ACTIVE;
+                $createSuperadmin->detail_info = GlobalFunction::changeLogCreate();
+                $createSuperadmin->save();
+                $createAdmin = new Roles();
+                $createAdmin->app_id = $model->id;
+                $createAdmin->name = 'Admin';
+                $createAdmin->code_roles = 'admin';
+                $createAdmin->status = Roles::STATUS_ACTIVE;
+                $createAdmin->detail_info = GlobalFunction::changeLogCreate();
+                $createAdmin->save();
+                $createUncommonPermission = new PermissionGroups();
+                $createUncommonPermission->app_id = $model->id;
+                $createUncommonPermission->name = 'Uncommon Permission';
+                $createUncommonPermission->code_permission_groups = 'uncommonPermission';
+                $createUncommonPermission->status = PermissionGroups::STATUS_ACTIVE;
+                $createUncommonPermission->detail_info = GlobalFunction::changeLogCreate();
+                $createUncommonPermission->save();
                 Yii::$app->session->setFlash('success', 'Data has been created.');
                 return $this->redirect(['view', 'seo_url' => $model->seo_url]);
             }
@@ -97,17 +105,9 @@ class AppsController extends Controller
         ]);
     }
 
-    /**
-     * Updates an existing Apps model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id ID
-     * @return string|\yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     public function actionUpdate($seo_url)
     {
         $model = $this->findModelbyUrl($seo_url);
-
         if ($this->request->isPost && $model->load($this->request->post()) && $model->validate()) {
             if(empty($model->getDirtyAttributes())) {
                 Yii::$app->session->setFlash('success', 'Nothing has been changed.');
@@ -130,21 +130,191 @@ class AppsController extends Controller
         $model = $this->findModelbyUrl($seo_url);
         $searchModel = new RolesSearch();
         $dataProvider = $searchModel->search($this->request->queryParams, $model->id);
+        $newRole = new Roles();
+
+        if ($this->request->isPost) {
+            $detailInfo = GlobalFunction::changeLogCreate();
+            $newRole->detail_info = $detailInfo;
+            $newRole->app_id = $model->id;
+            if ($newRole->load($this->request->post()) && $newRole->validate()) {
+                $checkRole = Roles::find()->where(['app_id' => $model->id, 'name' => $newRole->code_roles])->one();
+                if(!empty($checkRole)) {
+                    Yii::$app->session->setFlash('error', 'Code role already exists.');
+                    return $this->redirect(['roles', 'seo_url' => $model->seo_url]);
+                }
+                $newRole->save();
+                Yii::$app->session->setFlash('success', 'Data has been created.');
+                return $this->redirect(['roles', 'seo_url' => $model->seo_url]);
+            }
+        }
 
         return $this->render('roles', [
             'model' => $model,
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'newRole' => $newRole
         ]);
     }
 
-    /**
-     * Deletes an existing Apps model.
-     * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param int $id ID
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
+    public function actionViewRoles($id, $code_roles)
+    {
+        $roles = $this->findRolesModel($id);
+        if(empty($roles) || $roles->code_roles != $code_roles) { 
+            Yii::$app->session->setFlash('error', 'Data not found.');
+            return $this->redirect(Yii::$app->request->referrer);
+        }
+        $apps = $this->findModel($roles->app_id);
+        
+        return $this->render('view-roles', [
+            'apps' => $apps,
+            'roles' => $roles
+        ]);
+    }
+
+    public function actionUpdateRoles($id, $code_roles)
+    {
+        $updateRole = $this->findRolesModel($id);
+        if($updateRole->code_roles == 'superadmin' || $updateRole->code_roles == 'admin') {
+            Yii::$app->session->setFlash('error', 'Superadmin and Admin cannot be edited.');
+            return $this->redirect(['view-roles', 'id' => $id, 'code_roles' => $updateRole->code_roles]);
+        }
+        if($updateRole->code_roles != $code_roles) {
+            Yii::$app->session->setFlash('error', 'Data not found.');
+            return $this->redirect(['view-roles', 'id' => $id, 'code_roles' => $updateRole->code_roles]);
+        }
+
+        if ($this->request->isPost && $updateRole->load($this->request->post()) && $updateRole->validate()) {
+            $updateRole->status = intval($updateRole->status);
+            if(empty($updateRole->getDirtyAttributes())) {
+                Yii::$app->session->setFlash('success', 'Nothing has been changed.');
+                return $this->redirect(['view-roles', 'id' => $id, 'code_roles' => $updateRole->code_roles]);
+            }
+            $detailInfo = GlobalFunction::changeLogUpdate($updateRole->detail_info);
+            $updateRole->detail_info = $detailInfo;
+            $updateRole->save();
+            Yii::$app->session->setFlash('success', 'Data has been updated.');
+            return $this->redirect(['view-roles', 'id' => $id, 'code_roles' => $updateRole->code_roles]);
+        }
+        return $this->render('update-roles', [
+            'updateRole' => $updateRole
+        ]);
+    }
+
+    public function actionPermissionGroups($seo_url) {
+        $model = $this->findModelbyUrl($seo_url);
+        $searchModel = new PermissionGroupsSearch();
+        $dataProvider = $searchModel->search($this->request->queryParams, $model->id);
+        
+        $newPermissionGroups = new PermissionGroups();
+
+        if ($this->request->isPost) {
+            $detailInfo = GlobalFunction::changeLogCreate();
+            $newPermissionGroups->detail_info = $detailInfo;
+            $newPermissionGroups->app_id = $model->id;
+            if ($newPermissionGroups->load($this->request->post()) && $newPermissionGroups->validate()) {
+                $checkPermissionGroups = PermissionGroups::find()->where(['app_id' => $model->id, 'code_permission_groups' => $newPermissionGroups->code_permission_groups])->one();
+                if(!empty($checkPermissionGroups)) {
+                    Yii::$app->session->setFlash('error', 'Code permission groups already exists.');
+                    return $this->redirect(['permission-groups', 'seo_url' => $model->seo_url]);
+                }
+                $newPermissionGroups->save();
+                Yii::$app->session->setFlash('success', 'Data has been created.');
+                return $this->redirect(['permission-groups', 'seo_url' => $model->seo_url]);
+            }
+        }
+
+        return $this->render('permission-groups', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+            'model' => $model,
+            'newPermissionGroups' => $newPermissionGroups
+        ]);
+    }
+
+    public function actionViewPermissionGroups($id, $code_permission_groups) {
+        $permissionGroups = $this->findPermissionGroupsModel($id);
+        if(empty($permissionGroups) || $permissionGroups->code_permission_groups != $code_permission_groups) { 
+            Yii::$app->session->setFlash('error', 'Data not found.');
+            return $this->redirect(Yii::$app->request->referrer);
+        }
+        $apps = $this->findModel($permissionGroups->app_id);
+        
+        return $this->render('view-permission-groups', [
+            'apps' => $apps,
+            'permissionGroups' => $permissionGroups
+        ]);
+        
+    }
+
+    public function actionUpdatePermissionGroups($id, $code_permission_groups) {
+        $permissionGroups = $this->findPermissionGroupsModel($id);
+        if(empty($permissionGroups) || $permissionGroups->code_permission_groups != $code_permission_groups) {
+            Yii::$app->session->setFlash('error', 'Data not found.');
+            return $this->redirect(Yii::$app->request->referrer);
+        }
+
+        if ($this->request->isPost && $permissionGroups->load($this->request->post()) && $permissionGroups->validate()) {
+            $permissionGroups->status = intval($permissionGroups->status);
+            if(empty($permissionGroups->getDirtyAttributes())) {
+                Yii::$app->session->setFlash('success', 'Nothing has been changed.');
+                return $this->redirect(['view-permission-groups', 'id' => $permissionGroups->id, 'code_permission_groups' => $permissionGroups->code_permission_groups]);
+            }
+            $detailInfo = GlobalFunction::changeLogUpdate($permissionGroups->detail_info);
+            $permissionGroups->detail_info = $detailInfo;
+            $permissionGroups->save();
+            Yii::$app->session->setFlash('success', 'Data has been updated.');
+            return $this->redirect(['view-permission-groups', 'id' => $permissionGroups->id, 'code_permission_groups' => $permissionGroups->code_permission_groups]);
+        }
+        return $this->render('update-permission-groups', [
+            'permissionGroups' => $permissionGroups
+        ]);
+        
+    }
+
+    public function actionRestoreRoles($id) {
+            
+    }
+
+    public function actionDeleteRoles($id)
+    {
+        $model = $this->findRolesModel($id);
+        if($model->status == Roles::STATUS_DELETED) {
+            Yii::$app->session->setFlash('error', 'Data has been deleted.');
+            return $this->redirect(['roles', 'seo_url' => $model->app->seo_url]);
+        }
+        $model->status = Roles::STATUS_DELETED;
+        $model->detail_info = GlobalFunction::changeLogDelete($model->detail_info);
+        $model->save();
+        Yii::$app->session->setFlash('success', 'Data has been deleted.');
+        return $this->redirect(['roles', 'seo_url' => $model->app->seo_url]);
+    }   
+
+    public function actionRestorePermissionGroups($id) {
+        $model = $this->findPermissionGroupsModel($id);
+        if($model->status != PermissionGroups::STATUS_DELETED) {
+            Yii::$app->session->setFlash('error', 'Data not has been deleted.');
+            return $this->redirect(['permission-groups', 'seo_url' => $model->apps->seo_url]);
+        }
+        $model->status = PermissionGroups::STATUS_INACTIVE;
+        $model->detail_info = GlobalFunction::changeLogRestore($model->detail_info);
+        $model->save();
+        Yii::$app->session->setFlash('success', 'Data has been restored.');
+        return $this->redirect(['permission-groups', 'seo_url' => $model->apps->seo_url]);
+    }
+
+    public function actionDeletePermissionGroups($id) {
+        $model = $this->findPermissionGroupsModel($id);
+        if($model->status == PermissionGroups::STATUS_DELETED) {
+            Yii::$app->session->setFlash('error', 'Data has been deleted.');
+            return $this->redirect(['permission-groups', 'seo_url' => $model->apps->seo_url]);
+        }
+        $model->status = PermissionGroups::STATUS_DELETED;
+        $model->detail_info = GlobalFunction::changeLogDelete($model->detail_info);
+        $model->save();
+        Yii::$app->session->setFlash('success', 'Data has been deleted.');
+        return $this->redirect(['permission-groups', 'seo_url' => $model->apps->seo_url]);
+    }
+
     public function actionDelete($id)
     {
         $model = $this->findModel($id);
@@ -152,19 +322,30 @@ class AppsController extends Controller
         $model->detail_info = GlobalFunction::changeLogDelete($model->detail_info);
         $model->save();
         Yii::$app->session->setFlash('success', 'Data has been deleted.');
-        return $this->redirect(Yii::$app->request->referrer);
+        return $this->redirect(['index']);
     }
 
-    /**
-     * Finds the Apps model based on its primary key value.
-     * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param int $id ID
-     * @return Apps the loaded model
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     protected function findModel($id)
     {
-        if (($model = Apps::findOne(['id' => $id])) !== null) {
+        if (($model = Apps::find()->where(['id' => $id])->andWhere(['!=', 'status', Apps::STATUS_DELETED])->one()) !== null) {
+            return $model;
+        }
+
+        throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    protected function findPermissionGroupsModel($id)
+    {
+        if (($model = PermissionGroups::find()->where(['id' => $id])->andWhere(['!=', 'status', PermissionGroups::STATUS_DELETED])->one()) !== null) {
+            return $model;
+        }
+
+        throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    protected function findRolesModel($id)
+    {
+        if (($model = Roles::find()->where(['id' => $id])->andWhere(['!=', 'status', Roles::STATUS_DELETED])->one()) !== null) {
             return $model;
         }
 
@@ -173,7 +354,7 @@ class AppsController extends Controller
 
     protected function findModelbyUrl($seo_url)
     {
-        if (($model = Apps::findOne(['seo_url' => $seo_url])) !== null) {
+        if (($model = Apps::find()->where(['seo_url' => $seo_url])->andWhere(['!=', 'status', Apps::STATUS_DELETED])->one()) !== null) {
             return $model;
         }
 

@@ -5,19 +5,17 @@ namespace app\models;
 use Yii;
 
 /**
- * This is the model class for table "roles".
+ * This is the model class for table "permission groups".
  *
  * @property int $id
  * @property int $app_id
  * @property string $name
- * @property string $code_roles
+ * @property string|null $code_permission_groups
  * @property int $status
  * @property string|null $detail_info
- * @property string|null $permission_json
  */
-class Roles extends \yii\db\ActiveRecord
+class PermissionGroups extends \yii\db\ActiveRecord
 {
-
     const STATUS_INACTIVE = 0;
     const STATUS_ACTIVE = 1;
     const STATUS_DRAFT = 2;
@@ -25,15 +23,12 @@ class Roles extends \yii\db\ActiveRecord
     const STATUS_DELETED = 4;
     const STATUS_MAINTENANCE = 5;
 
-    const SCENARIO_CREATE = 'create';
-    const SCENARIO_UPDATE = 'update';
-    
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'roles';
+        return 'permission_groups';
     }
 
     /**
@@ -50,15 +45,12 @@ class Roles extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['app_id', 'name', 'code_roles', 'status'], 'required', 'on' => self::SCENARIO_CREATE],
-            [['name', 'code_roles'], 'required', 'on' => self::SCENARIO_UPDATE],
+            [['app_id', 'name', 'status', 'code_permission_groups'], 'required'],
             [['app_id', 'status'], 'integer'],
-            [['detail_info', 'permission_json'], 'safe'],
-            [['name'], 'string', 'max' => 250],
-            [['code_roles'], 'string', 'max' => 50],
-            [['code_roles'], 'match', 'pattern' => '/^[a-zA-Z]+$/'],
-            [['app_id'], 'exist', 'skipOnError' => true, 'targetClass' => Apps::class, 'targetAttribute' => ['app_id' => 'id']],
-            [['status'], 'in', 'range' => array_keys(self::getStatusList())],
+            [['detail_info'], 'safe'],
+            [['name'], 'string', 'max' => 255],
+            [['code_permission_groups'], 'string', 'max' => 50],
+            [['code_permission_groups'], 'match', 'pattern' => '/^[a-zA-Z]+$/'],
         ];
     }
 
@@ -69,26 +61,26 @@ class Roles extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'app_id' => 'App Name',
+            'app_id' => 'App ID',
             'name' => 'Name',
-            'code_roles' => 'Code Roles',
+            'code_permission_groups' => 'Code Permission Groups',
             'status' => 'Status',
             'detail_info' => 'Detail Info',
-            'permission_json' => 'Permission Json',
         ];
     }
 
     /**
      * {@inheritdoc}
-     * @return \app\models\query\RolesQuery the active query used by this AR class.
+     * @return \app\models\query\PermissionGroupsQuery the active query used by this AR class.
      */
     public static function find()
     {
-        return new \app\models\query\RolesQuery(get_called_class());
+        return new \app\models\query\PermissionGroupsQuery(get_called_class());
     }
 
-    public function getApps() {
-        return $this->hasOne(Apps::class, ['id' => 'app_id']);
+    public function getApps()
+    {
+        return $this->hasOne(Apps::className(), ['id' => 'app_id']);
     }
 
     public static function getStatusList() {
@@ -101,5 +93,4 @@ class Roles extends \yii\db\ActiveRecord
             self::STATUS_MAINTENANCE => 'Maintenance',
         ];
     }
-
 }

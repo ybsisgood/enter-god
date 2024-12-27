@@ -68,6 +68,13 @@ $config = [
             'rules' => [
                 '/' => 'site/index',
                 'apps/view/<seo_url:[\w\-]+>' => 'apps/view',
+                'apps/update/<seo_url:[\w\-]+>' => 'apps/update',
+                'apps/roles/<seo_url:[\w\-]+>' => 'apps/roles',
+                'apps/view-roles/<id:\d+>/<code_roles:[\w\-]+>' => 'apps/view-roles',
+                'apps/update-roles/<id:\d+>/<code_roles:[\w\-]+>' => 'apps/update-roles',
+                'apps/permission-groups/<seo_url:[\w\-]+>' => 'apps/permission-groups',
+                'apps/view-permission-groups/<id:\d+>/<code_permission_groups:[\w\-]+>' => 'apps/view-permission-groups',
+                'apps/update-permission-groups/<id:\d+>/<code_permission_groups:[\w\-]+>' => 'apps/update-permission-groups',
                 // 'gallery/view/<seo_url:[\w\-]+>' => 'gallery/view', // contoh
                 
             ],

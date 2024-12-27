@@ -21,6 +21,7 @@ class AppAsset extends AssetBundle
     public $baseUrl = '@web';
     public $css = [
         // 'themes/default/css/site.css',
+        'themes/custom/custom_css.css',
     ];
     public $js = [
         [
@@ -34,7 +35,6 @@ class AppAsset extends AssetBundle
         'themes/skote/assets/libs/metismenu/metisMenu.min.js',
         'themes/skote/assets/libs/simplebar/simplebar.min.js',
         'themes/skote/assets/libs/node-waves/waves.min.js',
-        // 'themes/custom/custom_css.css',
 
         'themes/skote/assets/js/app.js',
         'themes/skote/assets/libs/sweetalert2/sweetalert2.all.min.js',

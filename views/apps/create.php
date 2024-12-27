@@ -12,7 +12,7 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="apps-create">
 
     <p>
-        <?= Html::a('Back', ['index'], ['class' => 'btn btn-primary waves-effect waves-light']) ?>
+        <?= Html::a('Back', ['index'], ['class' => 'btn btn-primary btn-sm waves-effect waves-light']) ?>
     </p>
 
     <div class="card">
