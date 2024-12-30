@@ -38,10 +38,14 @@ class PermissionGroupsSearch extends PermissionGroups
      *
      * @return ActiveDataProvider
      */
-    public function search($params, $app_id = null)
+    public function search($params, $app_id = null, $deleted = false)
     {
         $query = PermissionGroups::find();
-        $query->where(['!=', 'status', PermissionGroups::STATUS_DELETED]);
+        if ($deleted) {
+            $query->where(['=', 'status', PermissionGroups::STATUS_DELETED]);
+        } else {
+            $query->where(['!=', 'status', PermissionGroups::STATUS_DELETED]);
+        }
         if ($app_id) {
             $query->andWhere(['app_id' => $app_id]);
         }

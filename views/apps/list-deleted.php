@@ -9,15 +9,13 @@ use kartik\grid\GridView;
 /** @var app\models\search\AppsSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Apps';
+$this->title = 'List Apps Deleted';
+$this->params['breadcrumbs'][] = ['label' => 'Apps', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="apps-index">
     <p>
-        <?= Html::a('Create Apps', ['create'], ['class' => 'btn btn-success btn-sm waves-effect waves-light']) ?>
-        <?php if(Yii::$app->user->identity->username == 'superadmin') : ?>
-        <?= Html::a('List Deleted', ['list-deleted'], ['class' => 'btn btn-danger btn-sm waves-effect waves-light']) ?>
-        <?php endif; ?>
+        <?= Html::a('List Apps', ['index'], ['class' => 'btn btn-primary btn-sm waves-effect waves-light']) ?>
     </p>
 
     <div class="row">
@@ -51,27 +49,15 @@ $this->params['breadcrumbs'][] = $this->title;
                             //'detail_info',
                             [
                                 'class' => 'kartik\grid\ActionColumn',
-                                'template' => '{view} {update} {delete}',
-                                'width' => '200px',
+                                'template' => '{restore}',
+                                'width' => '100px',
                                 'buttons' => [
-                                    'view' => function ($url, $model, $key) {
-                                        return Html::a('<i class="fas fa-eye"></i>', ['view', 'seo_url' => $model->seo_url], [
+                                    'restore' => function ($url, $model, $key) {
+                                        return Html::a('<i class="fas fa-trash-restore"></i>', ['restore', 'id' => $model->id], [
                                             'class' => 'btn btn-sm btn-primary waves-effect waves-light',
-                                            'title' => 'View',
-                                        ]);
-                                    },
-                                    'update' => function ($url, $model, $key) {
-                                        return Html::a('<i class="fas fa-pencil-alt"></i>', ['update', 'seo_url' => $model->seo_url], [
-                                            'class' => 'btn btn-sm btn-info waves-effect waves-light',
-                                            'title' => 'Update',
-                                        ]);
-                                    },
-                                    'delete' => function ($url, $model, $key) {
-                                        return Html::a('<i class="fas fa-trash-alt"></i>', $url, [
-                                            'class' => 'btn btn-sm btn-danger waves-effect waves-light',
-                                            'title' => 'Delete',
+                                            'title' => 'Restore',
                                             'data' => [
-                                                'confirm' => 'Are you sure you want to delete this item?',
+                                                'confirm' => 'Are you sure you want to restore this item?',
                                                 'method' => 'post',
                                             ],
                                         ]);

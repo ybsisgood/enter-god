@@ -22,7 +22,7 @@ foreach ($permissionGroups->detail_info['change_log'] ?? [] as $key => $value) {
     <p>
         <?= Html::a('Back', ['apps/permission-groups', 'seo_url' => $apps->seo_url], ['class' => 'btn btn-sm btn-primary waves-effect waves-light']) ?>
         <?php if($permissionGroups->code_permission_groups != 'uncommonPermission') : ?>
-        <?= Html::a('Update', ['update', 'id' => $permissionGroups->id, 'code_permission_groups' => $permissionGroups->code_permission_groups], ['class' => 'btn btn-sm btn-success waves-effect waves-light']) ?>
+        <?= Html::a('Update', ['update-permission-groups', 'id' => $permissionGroups->id, 'code_permission_groups' => $permissionGroups->code_permission_groups], ['class' => 'btn btn-sm btn-success waves-effect waves-light']) ?>
         <?= Html::a('Delete', ['delete-permission-groups', 'id' => $permissionGroups->id], [
             'class' => 'btn btn-sm btn-danger waves-effect waves-light',
             'data' => [

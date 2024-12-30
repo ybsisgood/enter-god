@@ -22,6 +22,9 @@ $this->params['breadcrumbs'][] = $this->title;
     <p>
         <?= Html::a('Back', ['apps/view', 'seo_url' => $model->seo_url], ['class' => 'btn btn-sm btn-primary waves-effect waves-light']) ?>
         <button type="button" class="btn btn-sm btn-success waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#addRoleModal">Add New Role</button>
+        <?php if(Yii::$app->user->identity->username == 'superadmin') : ?>
+        <?= Html::a('List Deleted', ['list-roles-deleted', 'id' => $model->id], ['class' => 'btn btn-sm btn-danger waves-effect waves-light']) ?>
+        <?php endif; ?>
     </p>
 
     <div class="modal fade" id="addRoleModal" tabindex="-1" aria-labelledby="addRoleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">

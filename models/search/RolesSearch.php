@@ -39,14 +39,17 @@ class RolesSearch extends Roles
      *
      * @return ActiveDataProvider
      */
-    public function search($params, $app_id = null)
+    public function search($params, $app_id = null, $deleted = false)
     {
         $query = Roles::find();
-        $query->where(['!=', 'status', Roles::STATUS_DELETED]);
+        if ($deleted) {
+            $query->where(['status' => Roles::STATUS_DELETED]);
+        } else {
+            $query->where(['!=', 'status', Roles::STATUS_DELETED]);
+        }
         if ($app_id) {
             $query->andWhere(['app_id' => $app_id]);
         }
-        
 
         // add conditions that should always apply here
 

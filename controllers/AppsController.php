@@ -32,6 +32,13 @@ class AppsController extends Controller
                     'class' => VerbFilter::className(),
                     'actions' => [
                         'delete' => ['POST'],
+                        'delete-roles' => ['POST'],
+                        'delete-permissions' => ['POST'],
+                        'delete-permission-groups' => ['POST'],
+                        'restore' => ['POST'],
+                        'restore-roles' => ['POST'],
+                        'restore-permissions' => ['POST'],
+                        'restore-permission-groups' => ['POST'],
                     ],
                 ],
                 'ghost-access' => [
@@ -49,6 +56,55 @@ class AppsController extends Controller
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionListDeleted()
+    {
+        if(Yii::$app->user->identity->username != 'superadmin') {
+            Yii::$app->session->setFlash('error', 'You are not allowed to access this page.');
+            return $this->redirect(['index']);
+        }
+        $searchModel = new AppsSearch();
+        $dataProvider = $searchModel->search($this->request->queryParams, $deleted = true);
+
+        return $this->render('list-deleted', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionListRolesDeleted($id)
+    {
+        if(Yii::$app->user->identity->username != 'superadmin') {
+            Yii::$app->session->setFlash('error', 'You are not allowed to access this page.');
+            return $this->redirect(['index']);
+        }
+        $model = $this->findModel($id);
+        $searchModel = new RolesSearch();
+        $dataProvider = $searchModel->search($this->request->queryParams, $model->id, $deleted = true);
+
+        return $this->render('list-roles-deleted', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+            'model' => $model,
+        ]);
+    }
+
+    public function actionListPermissionGroupsDeleted($id)
+    {
+        if(Yii::$app->user->identity->username != 'superadmin') {
+            Yii::$app->session->setFlash('error', 'You are not allowed to access this page.');
+            return $this->redirect(['index']);
+        }
+        $model = $this->findModel($id);
+        $searchModel = new PermissionGroupsSearch();
+        $dataProvider = $searchModel->search($this->request->queryParams, $model->id, $deleted = true);
+
+        return $this->render('list-permission-groups-deleted', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+            'model' => $model,
         ]);
     }
 
@@ -271,8 +327,30 @@ class AppsController extends Controller
         
     }
 
+    public function actionRestore($id) {
+        $model = Apps::findOne($id);
+        if($model->status != Apps::STATUS_DELETED) {
+            Yii::$app->session->setFlash('error', 'Data not has been deleted.');
+            return $this->redirect(['index']);
+        }
+        $model->status = Apps::STATUS_INACTIVE;
+        $model->detail_info = GlobalFunction::changeLogRestore($model->detail_info);
+        $model->save();
+        Yii::$app->session->setFlash('success', 'Data has been restored.');
+        return $this->redirect(['index']);
+    }
+
     public function actionRestoreRoles($id) {
-            
+        $model = Roles::findOne($id);
+        if($model->status != Roles::STATUS_DELETED) {
+            Yii::$app->session->setFlash('error', 'Data not has been deleted.');
+            return $this->redirect(['roles', 'seo_url' => $model->apps->seo_url]);
+        }
+        $model->status = Roles::STATUS_INACTIVE;
+        $model->detail_info = GlobalFunction::changeLogRestore($model->detail_info);
+        $model->save();
+        Yii::$app->session->setFlash('success', 'Data has been restored.');
+        return $this->redirect(['roles', 'seo_url' => $model->apps->seo_url]);
     }
 
     public function actionDeleteRoles($id)
@@ -280,17 +358,17 @@ class AppsController extends Controller
         $model = $this->findRolesModel($id);
         if($model->status == Roles::STATUS_DELETED) {
             Yii::$app->session->setFlash('error', 'Data has been deleted.');
-            return $this->redirect(['roles', 'seo_url' => $model->app->seo_url]);
+            return $this->redirect(['roles', 'seo_url' => $model->apps->seo_url]);
         }
         $model->status = Roles::STATUS_DELETED;
         $model->detail_info = GlobalFunction::changeLogDelete($model->detail_info);
         $model->save();
         Yii::$app->session->setFlash('success', 'Data has been deleted.');
-        return $this->redirect(['roles', 'seo_url' => $model->app->seo_url]);
+        return $this->redirect(['roles', 'seo_url' => $model->apps->seo_url]);
     }   
 
     public function actionRestorePermissionGroups($id) {
-        $model = $this->findPermissionGroupsModel($id);
+        $model = PermissionGroups::findOne($id);
         if($model->status != PermissionGroups::STATUS_DELETED) {
             Yii::$app->session->setFlash('error', 'Data not has been deleted.');
             return $this->redirect(['permission-groups', 'seo_url' => $model->apps->seo_url]);

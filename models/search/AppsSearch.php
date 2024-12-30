@@ -35,12 +35,17 @@ class AppsSearch extends Apps
      * Creates data provider instance with search query applied
      *
      * @param array $params
+     * @param bool $deleted
      *
      * @return ActiveDataProvider
      */
-    public function search($params)
+    public function search($params, $deleted = false)
     {
-        $query = Apps::find();
+        if ($deleted) {
+            $query = Apps::find()->where(['status' => Apps::STATUS_DELETED]);
+        } else {
+            $query = Apps::find()->where(['!=', 'status', Apps::STATUS_DELETED]);
+        }
 
         // add conditions that should always apply here
 
