@@ -1,36 +1,38 @@
 <?php
 
-use app\models\PermissionGroups;
+use app\models\Permissions;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use kartik\grid\GridView;
 use kartik\form\ActiveForm;
+use kartik\select2\Select2;
 use kartik\switchinput\SwitchInput;
 
+
 /** @var yii\web\View $this */
-/** @var app\models\search\PermissionGroupsSearch $searchModel */
+/** @var app\models\search\PermissionsSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Permission Groups : ' . $model->name;
+$this->title = 'Permissions : ' . $model->name;
 $this->params['breadcrumbs'][] = ['label' => 'Apps', 'url' => ['apps/index']];
 $this->params['breadcrumbs'][] = ['label' => $model->name, 'url' => ['apps/view', 'seo_url' => $model->seo_url]];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="permission-groups-index">
+<div class="permission-index">
 
     <p>
         <?= Html::a('Back', ['apps/view', 'seo_url' => $model->seo_url], ['class' => 'btn btn-sm btn-primary waves-effect waves-light']) ?>
-        <button type="button" class="btn btn-sm btn-success waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#addPermissionGroupsModal">Add New Permission Groups</button>
+        <button type="button" class="btn btn-sm btn-success waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#addPermissionsModal">Add New Permissions</button>
         <?php if(Yii::$app->user->identity->username == 'superadmin') : ?>
-        <?= Html::a('List Deleted', ['list-permission-groups-deleted', 'id' => $model->id], ['class' => 'btn btn-sm btn-danger waves-effect waves-light']) ?>
+        <?= Html::a('List Deleted', ['list-permissions-deleted', 'id' => $model->id], ['class' => 'btn btn-sm btn-danger waves-effect waves-light']) ?>
         <?php endif; ?>
     </p>
 
-    <div class="modal fade" id="addPermissionGroupsModal" tabindex="-1" aria-labelledby="addPermissionGroupsModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal fade" id="addPermissionsModal" tabindex="-1" aria-labelledby="addPermissionsModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header text-bg-success">
-                    <h1 class="modal-title fs-5" id="addPermissionGroupsModalLabel">Add Permission Groups</h1>
+                    <h1 class="modal-title fs-5" id="addPermissionsModalLabel">Add Permissions</h1>
                     <button type="button" class="btn-close" aria-label="Close" onclick="resetForm()"></button>
                 </div>
                 <div class="modal-body">
@@ -38,14 +40,26 @@ $this->params['breadcrumbs'][] = $this->title;
                         'options' => [
                             'enctype' => 'multipart/form-data',
                             'class' => 'disable-submit-buttons',
-                            'id' => 'add-permission-groups-form',
+                            'id' => 'add-permissions-form',
                         ],
                     ]) ?>
-                    <?= $form->field($newPermissionGroups, 'name')->textInput(['maxlength' => true]) ?>
 
-                    <?= $form->field($newPermissionGroups, 'code_permission_groups')->textInput(['maxlength' => true])->hint('Jangan pake SEPASI, gunakan camelCase') ?>
+                    <?= $form->field($newPermissions, 'permission_group_id')->widget(Select2::classname(), [
+                        'data' => $listPermissionGroups,
+                        'options' => [
+                            'placeholder' => 'Select Permission Groups',
+                        ],
+                        'pluginOptions' => [
+                            'allowClear' => true,
+                            'multiple' => false
+                        ]
+                    ]); ?>
+                    
+                    <?= $form->field($newPermissions, 'name')->textInput(['maxlength' => true]) ?>
 
-                    <?= $form->field($newPermissionGroups, 'status')->widget(SwitchInput::classname(), [
+                    <?= $form->field($newPermissions, 'code_permissions')->textInput(['maxlength' => true])->hint('Jangan pake SEPASI, gunakan camelCase') ?>
+
+                    <?= $form->field($newPermissions, 'status')->widget(SwitchInput::classname(), [
                         'pluginOptions' => [
                             'size' => 'small',
                             'onText' => 'Active',
@@ -62,11 +76,6 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <div class="card">
         <div class="card-body">
-            <div class="row">
-                <div class="col-md-12 text-end">
-                    <?= Html::a('reset filter', ['permission-groups', 'seo_url' => $model->seo_url], ['class' => 'btn btn-outline-primary btn-sm waves-effect waves-light']) ?>
-                </div>
-            </div>
             <?= GridView::widget([
                 'dataProvider' => $dataProvider,
                 'filterModel' => $searchModel,
@@ -82,8 +91,12 @@ $this->params['breadcrumbs'][] = $this->title;
                         'attribute' => 'appName',
                         'value' => 'apps.name',
                     ],
+                    [
+                        'attribute' => 'permissionGroupName',
+                        'value' => 'permissionGroups.name',
+                    ],
                     'name',
-                    'code_permission_groups',
+                    'code_permissions',
                     [
                         'attribute' => 'status',
                         'value' => function ($model) {
@@ -96,25 +109,19 @@ $this->params['breadcrumbs'][] = $this->title;
                         'width' => '200px',
                         'buttons' => [
                             'view' => function ($url, $model) {
-                                return Html::a('<i class="fas fa-eye"></i>', ['view-permission-groups', 'id' => $model->id, 'code_permission_groups' => $model->code_permission_groups], [
+                                return Html::a('<i class="fas fa-eye"></i>', ['view-permissions', 'id' => $model->id, 'code_permissions' => $model->code_permissions], [
                                     'title' => 'View',
                                     'class' => 'btn btn-sm btn-primary waves-effect waves-light',
                                 ]);
                             },
                             'update' => function ($url, $model) {
-                                if($model->code_permission_groups == 'uncommonPermission') {
-                                    return '';
-                                }
-                                return Html::a('<i class="fas fa-edit"></i>', ['update-permission-groups', 'id' => $model->id, 'code_permission_groups' => $model->code_permission_groups], [
+                                return Html::a('<i class="fas fa-edit"></i>', ['update-permissions', 'id' => $model->id, 'code_permissions' => $model->code_permissions], [
                                     'title' => 'Update',
                                     'class' => 'btn btn-sm btn-success waves-effect waves-light',
                                 ]);
                             },
                             'delete' => function ($url, $model) {
-                                if($model->code_permission_groups == 'uncommonPermission') {
-                                    return '';
-                                }
-                                return Html::a('<i class="fas fa-trash"></i>', ['delete-permission-groups', 'id' => $model->id], [
+                                return Html::a('<i class="fas fa-trash"></i>', ['delete-permissions', 'id' => $model->id], [
                                     'title' => 'Delete',
                                     'class' => 'btn btn-sm btn-danger waves-effect waves-light',
                                     'data' => [
@@ -131,13 +138,14 @@ $this->params['breadcrumbs'][] = $this->title;
             ]); ?>
         </div>
     </div>
+
 </div>
 
 <script>
     function resetForm() {
-        const form = document.getElementById('add-permission-groups-form');
+        const form = document.getElementById('add-permissions-form');
         form.reset();
-        const modal = bootstrap.Modal.getInstance(document.getElementById('addPermissionGroupsModal'));
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addPermissionsModal'));
         modal.hide();
     }
 </script>

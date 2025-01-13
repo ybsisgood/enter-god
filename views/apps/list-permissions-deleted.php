@@ -1,29 +1,28 @@
 <?php
 
-use app\models\Roles;
+use app\models\Permissions;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use kartik\grid\GridView;
 use kartik\form\ActiveForm;
+use kartik\select2\Select2;
 use kartik\switchinput\SwitchInput;
 
+
 /** @var yii\web\View $this */
-/** @var app\models\search\RolesSearch $searchModel */
+/** @var app\models\search\PermissionsSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'List Roles Deleted: ' . $model->name;
+$this->title = 'List Permissions Deleted : ' . $model->name;
 $this->params['breadcrumbs'][] = ['label' => 'Apps', 'url' => ['apps/index']];
 $this->params['breadcrumbs'][] = ['label' => $model->name, 'url' => ['apps/view', 'seo_url' => $model->seo_url]];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-
-<div class="roles-index">
+<div class="permission-index">
 
     <p>
-        <?= Html::a('List Roles', ['apps/roles', 'seo_url' => $model->seo_url], ['class' => 'btn btn-sm btn-primary waves-effect waves-light']) ?>
+        <?= Html::a('List Permissions', ['apps/permissions', 'seo_url' => $model->seo_url], ['class' => 'btn btn-sm btn-primary waves-effect waves-light']) ?>
     </p>
-
-    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
     <div class="card">
         <div class="card-body">
@@ -36,28 +35,23 @@ $this->params['breadcrumbs'][] = $this->title;
                 ],
                 'columns' => [
                     ['class' => 'kartik\grid\SerialColumn'],
+
+                    // 'id',
                     [
                         'attribute' => 'app_id',
                         'value' => 'apps.name',
                     ],
+                    [
+                        'attribute' => 'permission_group_id',
+                        'value' => 'permissionGroups.name',
+                    ],
                     'name',
-                    'code_roles',
+                    'code_permissions',
                     [
                         'attribute' => 'status',
                         'value' => function ($model) {
-                            return Roles::getStatusList()[$model->status];
+                            return $model->getStatusList()[$model->status];
                         },
-                    ],
-                    [
-                        'label' => 'Detail Info',
-                        'format' => 'raw',
-                        'value' => function ($model) {
-                            $text = '';
-                            foreach ($model->detail_info['change_log'] ?? [] as $key => $value) {
-                                $text .= '<b>' . $key . '</b>: ' . $value . '<br>'; 
-                            }
-                            return $text;
-                        }
                     ],
                     [
                         'class' => 'kartik\grid\ActionColumn',
@@ -65,7 +59,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'width' => '200px',
                         'buttons' => [
                             'restore' => function ($url, $model) {
-                                return Html::a('<i class="fas fa-trash-restore"></i>', ['restore-roles', 'id' => $model->id], [
+                                return Html::a('<i class="fas fa-trash-restore"></i>', ['restore-permissions', 'id' => $model->id], [
                                     'title' => 'Restore',
                                     'class' => 'btn btn-sm btn-primary waves-effect waves-light',
                                     'data' => [
@@ -77,9 +71,10 @@ $this->params['breadcrumbs'][] = $this->title;
                         ]
                     ],
                     //'detail_info',
-                    //'permission_json',
+                
                 ],
             ]); ?>
         </div>
     </div>
+
 </div>

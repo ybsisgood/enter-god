@@ -62,68 +62,84 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
 
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
-
-    <?= GridView::widget([
-        'dataProvider' => $dataProvider,
-        'filterModel' => $searchModel,
-        'responsiveWrap' => false,
-        'options' => [
-            'id' => 'align-items-middle'
-        ],
-        'columns' => [
-            ['class' => 'kartik\grid\SerialColumn'],
-            [
-                'attribute' => 'app_id',
-                'value' => 'apps.name',
-            ],
-            'name',
-            'code_roles',
-            [
-                'attribute' => 'status',
-                'value' => function ($model) {
-                    return Roles::getStatusList()[$model->status];
-                },
-            ],
-            [
-                'class' => 'kartik\grid\ActionColumn',
-                'template' => '{view} {update} {delete}',
-                'width' => '200px',
-                'buttons' => [
-                    'view' => function ($url, $model) {
-                        return Html::a('<i class="fas fa-eye"></i>', ['view-roles', 'id' => $model->id, 'code_roles' => $model->code_roles], [
-                            'title' => 'View',
-                            'class' => 'btn btn-sm btn-primary waves-effect waves-light',
-                        ]);
-                    },
-                    'update' => function ($url, $model) {
-                        if($model->code_roles == 'superadmin' || $model->code_roles == 'admin') {
-                            return '';
-                        }
-                        return Html::a('<i class="fas fa-edit"></i>', ['update-roles', 'id' => $model->id, 'code_roles' => $model->code_roles], [
-                            'title' => 'Update',
-                            'class' => 'btn btn-sm btn-success waves-effect waves-light',
-                        ]);
-                    },
-                    'delete' => function ($url, $model) {
-                        if($model->code_roles == 'superadmin' || $model->code_roles == 'admin') {
-                            return '';
-                        }
-                        return Html::a('<i class="fas fa-trash"></i>', ['delete-roles', 'id' => $model->id], [
-                            'title' => 'Delete',
-                            'class' => 'btn btn-sm btn-danger waves-effect waves-light',
-                            'data' => [
-                                'confirm' => 'Are you sure you want to delete this item?',
-                                'method' => 'post',
-                            ],
-                        ]);
-                    },
-                ]
-            ],
-            //'detail_info',
-            //'permission_json',
-        ],
-    ]); ?>
-
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12 text-end">
+                    <?= Html::a('reset filter', ['roles', 'seo_url' => $model->seo_url], ['class' => 'btn btn-outline-primary btn-sm waves-effect waves-light']) ?>
+                </div>
+            </div>
+            <?= GridView::widget([
+                'dataProvider' => $dataProvider,
+                'filterModel' => $searchModel,
+                'responsiveWrap' => false,
+                'options' => [
+                    'id' => 'align-items-middle'
+                ],
+                'columns' => [
+                    ['class' => 'kartik\grid\SerialColumn'],
+                    [
+                        'attribute' => 'appName',
+                        'value' => 'apps.name',
+                    ],
+                    'name',
+                    'code_roles',
+                    [
+                        'attribute' => 'status',
+                        'value' => function ($model) {
+                            return Roles::getStatusList()[$model->status];
+                        },
+                    ],
+                    [
+                        'class' => 'kartik\grid\ActionColumn',
+                        'template' => '{view} {update} {permissions} {delete}',
+                        'width' => '200px',
+                        'buttons' => [
+                            'view' => function ($url, $model) {
+                                return Html::a('<i class="fas fa-eye"></i>', ['view-roles', 'id' => $model->id, 'code_roles' => $model->code_roles], [
+                                    'title' => 'View',
+                                    'class' => 'btn btn-sm btn-primary waves-effect waves-light',
+                                ]);
+                            },
+                            'update' => function ($url, $model) {
+                                if($model->code_roles == 'superadmin' || $model->code_roles == 'admin') {
+                                    return '';
+                                }
+                                return Html::a('<i class="fas fa-edit"></i>', ['update-roles', 'id' => $model->id, 'code_roles' => $model->code_roles], [
+                                    'title' => 'Update',
+                                    'class' => 'btn btn-sm btn-success waves-effect waves-light',
+                                ]);
+                            },
+                            'permissions' => function ($url, $model) {
+                                if($model->code_roles == 'superadmin' || $model->code_roles == 'admin') {
+                                    return '';
+                                } 
+                                return Html::a('<i class="fas fa-key"></i>', ['setting-role-permission', 'id' => $model->id, 'code_roles' => $model->code_roles], [
+                                    'title' => 'Permissions',
+                                    'class' => 'btn btn-sm btn-info waves-effect waves-light',
+                                ]);
+                            },
+                            'delete' => function ($url, $model) {
+                                if($model->code_roles == 'superadmin' || $model->code_roles == 'admin') {
+                                    return '';
+                                }
+                                return Html::a('<i class="fas fa-trash"></i>', ['delete-roles', 'id' => $model->id], [
+                                    'title' => 'Delete',
+                                    'class' => 'btn btn-sm btn-danger waves-effect waves-light',
+                                    'data' => [
+                                        'confirm' => 'Are you sure you want to delete this item?',
+                                        'method' => 'post',
+                                    ],
+                                ]);
+                            },
+                        ]
+                    ],
+                    //'detail_info',
+                    //'permission_json',
+                ],
+            ]); ?>
+        </div>
+    </div>
 
 </div>
 

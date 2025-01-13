@@ -4,6 +4,7 @@ use yii\helpers\Html;
 use kartik\detail\DetailView;
 use app\models\Apps;
 use app\models\Roles;
+use app\models\Permissions;
 
 /** @var yii\web\View $this */
 /** @var app\models\Apps $model */
@@ -70,6 +71,42 @@ foreach ($roles->detail_info['change_log'] ?? [] as $key => $value) {
                 </div>
             </div>
         </div>
-    </div>
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <span class="fw-bold">List Permission :</span>
+                    <ul class="list-group mt-2">
+                        <?php 
+                        // Mengelompokkan permissionsDetail berdasarkan name_pemission_groups
+                        $groupedPermissions = [];
+                        $permissionList = $roles->permission_json['permissionsDetail'] ?? [];
+                        foreach ($permissionList as $permission) {
+                            $groupedPermissions[$permission['name_pemission_groups']][] = $permission;
+                        }
 
+                        // Menampilkan permissions berdasarkan pengelompokan
+                        foreach ($groupedPermissions as $groupName => $permissions) : ?>
+                            <li class="list-group-item fw-bold bg-light"><?= htmlspecialchars($groupName) ?></li>
+                            <?php foreach ($permissions as $permission) : ?>
+                                <li class="list-group-item">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1">
+                                            <span class="mb-0"><?= htmlspecialchars($permission['name']) ?></span>
+                                        </div>
+                                        <div class="flex-shrink-0 ms-2">
+                                            <?php if(isset($permission['status']) && $permission['status'] == 1) : ?>
+                                                <span class="badge badge-soft-success"><?= htmlspecialchars(Permissions::getStatusList()[$permission['status']]) ?></span>
+                                            <?php elseif(isset($permission['status'])) : ?>
+                                                <span class="badge badge-soft-danger"><?= htmlspecialchars(Permissions::getStatusList()[$permission['status']]) ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </li>
+                            <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

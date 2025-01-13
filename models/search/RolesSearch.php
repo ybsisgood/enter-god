@@ -12,6 +12,8 @@ use Codeception\Lib\Interfaces\API;
  */
 class RolesSearch extends Roles
 {
+
+    public $appName;
     /**
      * {@inheritdoc}
      */
@@ -19,7 +21,7 @@ class RolesSearch extends Roles
     {
         return [
             [['id', 'app_id', 'status'], 'integer'],
-            [['name', 'code_roles', 'detail_info', 'permission_json'], 'safe'],
+            [['name', 'code_roles', 'detail_info', 'permission_json', 'appName'], 'safe'],
         ];
     }
 
@@ -42,10 +44,11 @@ class RolesSearch extends Roles
     public function search($params, $app_id = null, $deleted = false)
     {
         $query = Roles::find();
+        $query->joinWith('apps');
         if ($deleted) {
-            $query->where(['status' => Roles::STATUS_DELETED]);
+            $query->where(['roles.status' => Roles::STATUS_DELETED]);
         } else {
-            $query->where(['!=', 'status', Roles::STATUS_DELETED]);
+            $query->where(['!=', 'roles.status', Roles::STATUS_DELETED]);
         }
         if ($app_id) {
             $query->andWhere(['app_id' => $app_id]);
@@ -56,6 +59,11 @@ class RolesSearch extends Roles
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
         ]);
+
+        $dataProvider->sort->attributes['appName'] = [
+            'asc' => ['apps.name' => SORT_ASC],
+            'desc' => ['apps.name' => SORT_DESC],
+        ];
 
         $this->load($params);
 
@@ -69,13 +77,14 @@ class RolesSearch extends Roles
         $query->andFilterWhere([
             'id' => $this->id,
             'app_id' => $this->app_id,
-            'status' => $this->status,
+            'roles.status' => $this->status,
         ]);
 
-        $query->andFilterWhere(['like', 'name', $this->name])
+        $query->andFilterWhere(['like', 'roles.name', $this->name])
             ->andFilterWhere(['like', 'code_roles', $this->code_roles])
-            ->andFilterWhere(['like', 'detail_info', $this->detail_info])
-            ->andFilterWhere(['like', 'permission_json', $this->permission_json]);
+            ->andFilterWhere(['like', 'roles.detail_info', $this->detail_info])
+            ->andFilterWhere(['like', 'permission_json', $this->permission_json])
+            ->andFilterWhere(['like', 'apps.name', $this->appName]);
 
         return $dataProvider;
     }

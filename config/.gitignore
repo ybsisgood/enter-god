@@ -1,0 +1,11 @@
+*
+!.gitignore
+!__autocomplete.php
+!console.php
+!db_edc_local.php
+!db_local.php
+!db_sso_local.php
+!params_local.php
+!test_db.php
+!test.php
+!web.php

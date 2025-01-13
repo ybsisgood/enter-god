@@ -23,6 +23,9 @@ class PermissionGroups extends \yii\db\ActiveRecord
     const STATUS_DELETED = 4;
     const STATUS_MAINTENANCE = 5;
 
+    const SCENARIO_CREATE = 'create';
+    const SCENARIO_UPDATE = 'update';
+
     /**
      * {@inheritdoc}
      */
@@ -45,7 +48,7 @@ class PermissionGroups extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['app_id', 'name', 'status', 'code_permission_groups'], 'required'],
+            [['app_id', 'name', 'status', 'code_permission_groups'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_UPDATE]],
             [['app_id', 'status'], 'integer'],
             [['detail_info'], 'safe'],
             [['name'], 'string', 'max' => 255],

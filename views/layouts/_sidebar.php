@@ -28,6 +28,17 @@ use ybsisgood\modules\UserManagement\models\User;
                     </a>
                 </li>
                 <?php endif; ?>
+                <?php if(User::hasRole('admin') || User::hasPermission('employeeAccess')):?>
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect">
+                    <i class="bx bx-user"></i>
+                    <span key="t-employee-menu">Employee</span>
+                    </a>
+                    <ul class="sub-menu" aria-expanded="true">
+                        <li><a href="<?= Url::toRoute(['/employees']) ?>" key="t-list-employee">List Employee</a></li>
+                    </ul>
+                </li>
+                <?php endif; ?>
                 <?php if (User::hasRole('admin') || User::hasPermission('userAccess') || User::hasPermission('roleAccess')):?>
                 <li class="menu-title" key="t-user-management">User Management</li>
                 <li>

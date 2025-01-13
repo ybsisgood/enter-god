@@ -34,6 +34,9 @@ class Apps extends \yii\db\ActiveRecord
     const STATUS_ENV_TESTING = 3;
     const STATUS_ENV_DEPRECATED = 4;
 
+    const SCENARIO_CREATE = 'create';
+    const SCENARIO_UPDATE = 'update';
+
     /**
      * {@inheritdoc}
      */
@@ -56,7 +59,7 @@ class Apps extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'status', 'status_env'], 'required'],
+            [['name', 'status', 'status_env', 'code_app'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_UPDATE]],
             [['description'], 'string'],
             [['status', 'status_env'], 'integer'],
             [['live_date', 'detail_info'], 'safe'],

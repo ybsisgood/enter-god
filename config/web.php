@@ -1,9 +1,8 @@
 <?php
-
-$params = require __DIR__ . '/params.php';
-$db = require __DIR__ . '/db.php';
-$dbsso = require __DIR__ . '/db_sso.php';
-$dbedc = require __DIR__ . '/db_edc.php';
+$params = YII_ENV_DEV ? require __DIR__ . '/params_local.php': require __DIR__ . '/params.php';
+$db = YII_ENV_DEV ? require __DIR__ . '/db_local.php': require __DIR__ . '/db.php';
+$dbsso = YII_ENV_DEV ? require __DIR__ . '/db_sso_local.php': require __DIR__ . '/db_sso.php';
+$dbedc = YII_ENV_DEV ? require __DIR__ . '/db_edc_local.php': require __DIR__ . '/db_edc.php';
 
 $config = [
     'id' => 'basic'.$params['code-id'],
@@ -72,9 +71,13 @@ $config = [
                 'apps/roles/<seo_url:[\w\-]+>' => 'apps/roles',
                 'apps/view-roles/<id:\d+>/<code_roles:[\w\-]+>' => 'apps/view-roles',
                 'apps/update-roles/<id:\d+>/<code_roles:[\w\-]+>' => 'apps/update-roles',
+                'apps/setting-role-permission/<id:\d+>/<code_roles:[\w\-]+>' => 'apps/setting-role-permission',
                 'apps/permission-groups/<seo_url:[\w\-]+>' => 'apps/permission-groups',
                 'apps/view-permission-groups/<id:\d+>/<code_permission_groups:[\w\-]+>' => 'apps/view-permission-groups',
                 'apps/update-permission-groups/<id:\d+>/<code_permission_groups:[\w\-]+>' => 'apps/update-permission-groups',
+                'apps/permissions/<seo_url:[\w\-]+>' => 'apps/permissions',
+                'apps/view-permissions/<id:\d+>/<code_permissions:[\w\-]+>' => 'apps/view-permissions',
+                'apps/update-permissions/<id:\d+>/<code_permissions:[\w\-]+>' => 'apps/update-permissions',
                 // 'gallery/view/<seo_url:[\w\-]+>' => 'gallery/view', // contoh
                 
             ],

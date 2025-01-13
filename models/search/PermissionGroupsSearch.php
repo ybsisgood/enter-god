@@ -11,6 +11,7 @@ use app\models\PermissionGroups;
  */
 class PermissionGroupsSearch extends PermissionGroups
 {
+    public $appName;
     /**
      * {@inheritdoc}
      */
@@ -18,7 +19,7 @@ class PermissionGroupsSearch extends PermissionGroups
     {
         return [
             [['id', 'app_id', 'status'], 'integer'],
-            [['name', 'code_permission_groups', 'detail_info'], 'safe'],
+            [['name', 'code_permission_groups', 'detail_info','appName'], 'safe'],
         ];
     }
 
@@ -41,10 +42,11 @@ class PermissionGroupsSearch extends PermissionGroups
     public function search($params, $app_id = null, $deleted = false)
     {
         $query = PermissionGroups::find();
+        $query->joinWith('apps');
         if ($deleted) {
-            $query->where(['=', 'status', PermissionGroups::STATUS_DELETED]);
+            $query->where(['=', 'permission_groups.status', PermissionGroups::STATUS_DELETED]);
         } else {
-            $query->where(['!=', 'status', PermissionGroups::STATUS_DELETED]);
+            $query->where(['!=', 'permission_groups.status', PermissionGroups::STATUS_DELETED]);
         }
         if ($app_id) {
             $query->andWhere(['app_id' => $app_id]);
@@ -54,8 +56,14 @@ class PermissionGroupsSearch extends PermissionGroups
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'sort' => ['defaultOrder' => ['app_id' => SORT_ASC]],
         ]);
 
+        $dataProvider->sort->attributes['appName'] = [
+            'asc' => ['apps.name' => SORT_ASC],
+            'desc' => ['apps.name' => SORT_DESC],
+        ];
+        
         $this->load($params);
 
         if (!$this->validate()) {
@@ -68,12 +76,13 @@ class PermissionGroupsSearch extends PermissionGroups
         $query->andFilterWhere([
             'id' => $this->id,
             'app_id' => $this->app_id,
-            'status' => $this->status,
+            'permission_groups.status' => $this->status,
         ]);
 
-        $query->andFilterWhere(['like', 'name', $this->name])
+        $query->andFilterWhere(['like', 'permission_groups.name', $this->name])
             ->andFilterWhere(['like', 'code_permission_groups', $this->code_permission_groups])
-            ->andFilterWhere(['like', 'detail_info', $this->detail_info]);
+            ->andFilterWhere(['like', 'detail_info', $this->detail_info])
+            ->andFilterWhere(['like', 'apps.name', $this->appName]);
 
         return $dataProvider;
     }

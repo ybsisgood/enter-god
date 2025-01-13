@@ -24,6 +24,11 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12 text-end">
+                            <?= Html::a('reset filter', ['index'], ['class' => 'btn btn-outline-primary btn-sm waves-effect waves-light mb-1']) ?>
+                        </div>
+                    </div>
                     <?= GridView::widget([
                         'dataProvider' => $dataProvider,
                         'filterModel' => $searchModel,
