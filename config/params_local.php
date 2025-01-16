@@ -18,6 +18,10 @@ return [
     'themeLogoLargeLight' => 'enterkomputer-logo.png',
     'themeLogoLargeDark' => 'enterkomputer-logo.png',
 
+    'imageCategoryPath' => 'uploads/category/',
+    'domainImageCategory' => 'http://localhost/enter-god/uploads/category/',
+    'imagePlaceholderCategory' => 'https://placeholder.pics/svg/200x200',
+
     'bsDependencyEnabled' => false,
     'bsVersion' => '5.x',
 

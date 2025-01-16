@@ -39,6 +39,18 @@ use ybsisgood\modules\UserManagement\models\User;
                     </ul>
                 </li>
                 <?php endif; ?>
+                <?php if (User::hasRole('admin') || User::hasPermission('edcAccess')):?>
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect">
+                    <i class="bx bx-credit-card-alt"></i>
+                    <span key="t-edc-menu">EDC</span>
+                    </a>
+                    <ul class="sub-menu" aria-expanded="true">
+                        <li><a href="<?= Url::toRoute(['/edc/vendor']) ?>" key="t-list-vendor">Vendor</a></li>
+                        <li><a href="<?= Url::toRoute(['/edc/category']) ?>" key="t-list-category">Category</a></li>
+                    </ul>
+                </li>
+                <?php endif; ?>
                 <?php if (User::hasRole('admin') || User::hasPermission('userAccess') || User::hasPermission('roleAccess')):?>
                 <li class="menu-title" key="t-user-management">User Management</li>
                 <li>
