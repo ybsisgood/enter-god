@@ -27,7 +27,10 @@
         "kartik-v/yii2-widget-datetimepicker": "dev-master",
         "kartik-v/yii2-detail-view": "dev-master",
         "kartik-v/yii2-widget-fileinput": "dev-master",
-        "kartik-v/yii2-sortable-input": "dev-master"
+        "kartik-v/yii2-sortable-input": "dev-master",
+        "kartik-v/yii2-markdown": "dev-master",
+        "kdn/yii2-json-editor": "*",
+        "kartik-v/yii2-number": "dev-master"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.1.0",

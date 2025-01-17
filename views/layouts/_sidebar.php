@@ -46,8 +46,10 @@ use ybsisgood\modules\UserManagement\models\User;
                     <span key="t-edc-menu">EDC</span>
                     </a>
                     <ul class="sub-menu" aria-expanded="true">
-                        <li><a href="<?= Url::toRoute(['/edc/vendor']) ?>" key="t-list-vendor">Vendor</a></li>
+                        <li><a href="<?= Url::toRoute(['/edc/account']) ?>" key="t-list-account">Account</a></li>
                         <li><a href="<?= Url::toRoute(['/edc/category']) ?>" key="t-list-category">Category</a></li>
+                        <li><a href="<?= Url::toRoute(['/edc/channel']) ?>" key="t-list-channel">Channel</a></li>
+                        <li><a href="<?= Url::toRoute(['/edc/vendor']) ?>" key="t-list-vendor">Vendor</a></li>
                     </ul>
                 </li>
                 <?php endif; ?>

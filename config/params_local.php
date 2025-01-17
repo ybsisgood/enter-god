@@ -22,6 +22,10 @@ return [
     'domainImageCategory' => 'http://localhost/enter-god/uploads/category/',
     'imagePlaceholderCategory' => 'https://placeholder.pics/svg/200x200',
 
+    'imageChannelPath' => 'uploads/channel/',
+    'domainImageChannel' => 'http://localhost/enter-god/uploads/channel/',
+    'imagePlaceholderChannel' => 'https://placeholder.pics/svg/200x200',
+
     'bsDependencyEnabled' => false,
     'bsVersion' => '5.x',
 

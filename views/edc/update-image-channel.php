@@ -5,18 +5,18 @@ use kartik\form\ActiveForm;
 use kartik\file\FileInput;
 
 /** @var yii\web\View $this */
-/** @var app\models\PaymentCategories $model */
+/** @var app\models\PaymentChannels $model */
 
-$this->title = 'Update Image Category: ' . $model->name;
-$this->params['breadcrumbs'][] = ['label' => 'Payment Categories', 'url' => ['category']];
-$this->params['breadcrumbs'][] = ['label' => $model->name, 'url' => ['view-category', 'id' => $model->id]];
+$this->title = 'Update Image Channel: ' . $model->name;
+$this->params['breadcrumbs'][] = ['label' => 'Payment Channels', 'url' => ['channel']];
+$this->params['breadcrumbs'][] = ['label' => $model->name, 'url' => ['view-channel', 'id' => $model->id]];
 $this->params['breadcrumbs'][] = 'Update Image';
 ?>
 
 <div class="edc-update-category-image">
 
     <p>
-        <?= Html::a('Back', ['view-category', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm waves-effect waves-light']) ?>
+        <?= Html::a('Back', ['view-channel', 'id' => $model->id], ['class' => 'btn btn-primary btn-sm waves-effect waves-light']) ?>
     </p>
 
     <div class="card">
@@ -31,7 +31,7 @@ $this->params['breadcrumbs'][] = 'Update Image';
                     <?php if($model->image_url): ?>
                         <div class="form-group mb-3">
                             <?= Html::label('Current Image', null, ['class' => 'control-label col-md-2']) ?>
-                            <?= Html::img(Yii::$app->params['domainImageCategory'].$model->image_url, ['class' => 'img-responsive']) ?>
+                            <?= Html::img(Yii::$app->params['domainImageChannel'].$model->image_url, ['class' => 'img-responsive']) ?>
                         </div>
                     <?php endif; ?>
                     <?= $form->field($model, 'imageFile')->widget(FileInput::classname(), [

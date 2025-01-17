@@ -29,6 +29,9 @@ $config = [
         'gridview' =>  [
             'class' => '\kartik\grid\Module'
         ],
+        'markdown' => [
+            'class' => 'kartik\markdown\Module',
+        ]
     ],
     'components' => [
         'request' => [
