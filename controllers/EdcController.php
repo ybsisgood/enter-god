@@ -769,6 +769,7 @@ class EdcController extends Controller
     public function actionCreateOutlet()
     {
         $model = new Outlets();
+        $model->scenario = Outlets::SCENARIO_CREATE;
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->validate()) {
@@ -796,6 +797,7 @@ class EdcController extends Controller
     public function actionUpdateOutlet($id)
     {
         $model = $this->findModelOutlet($id);
+        $model->scenario = Outlets::SCENARIO_UPDATE;
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->validate()) {
             $detailInfo = GlobalFunction::changeLogUpdate($model->detail_info);
