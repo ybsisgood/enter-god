@@ -20,8 +20,8 @@ class SerialKeys extends \yii\db\ActiveRecord
 {
     const STATUS_INACTIVE = 0;
     const STATUS_ACTIVE = 1;
-    const STATUS_CLAIMED = 2;
-    const STATUS_EXPIRED = 3;
+    const STATUS_DRAFT = 2;
+    const STATUS_COMPLETED = 3;
     const STATUS_DELETED = 4;
     const STATUS_MAINTENANCE = 5;
 
@@ -96,8 +96,8 @@ class SerialKeys extends \yii\db\ActiveRecord
         return [
             self::STATUS_INACTIVE => 'Inactive',
             self::STATUS_ACTIVE => 'Active',
-            self::STATUS_CLAIMED => 'Claimed',
-            self::STATUS_EXPIRED => 'Expired',
+            self::STATUS_DRAFT => 'Draft',
+            self::STATUS_COMPLETED => 'Completed',
             self::STATUS_DELETED => 'Deleted',
             self::STATUS_MAINTENANCE => 'Maintenance',
         ];

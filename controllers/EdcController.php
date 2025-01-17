@@ -982,7 +982,7 @@ class EdcController extends Controller
     {
         $model = new SerialKeys();
 
-        $model->status = SerialKeys::STATUS_ACTIVE;
+        $model->status = SerialKeys::STATUS_INACTIVE;
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->validate()) {
                 $checkCode = SerialKeys::find()->where(['activation_code' => $model->activation_code])->one();
