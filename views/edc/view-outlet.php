@@ -2,6 +2,7 @@
 
 use app\models\Outlets;
 use app\models\PaymentCategories;
+use app\models\PaymentChannels;
 use yii\helpers\Html;
 use kartik\detail\DetailView;
 
@@ -70,7 +71,7 @@ foreach ($model->detail_info['change_log'] ?? [] as $key => $value) {
                             <?php foreach ($model->detail_info['payment_category'] ?? [] as $key => $value) : ?>
                                 <ul class="list-group list-group-flush">
                                     <li>
-                                        <?= PaymentCategories::findOne($value)->name ?> | <?= PaymentCategories::getStatusList()[PaymentCategories::findOne($value)->status] ?>
+                                        <?= PaymentCategories::findOne($value)?->name ?> | <?= PaymentCategories::getStatusList()[PaymentCategories::findOne($value)?->status] ?>
                                     </li>
                                 </ul>
                             <?php endforeach; ?>
@@ -80,7 +81,7 @@ foreach ($model->detail_info['change_log'] ?? [] as $key => $value) {
                             <?php foreach ($model->detail_info['payment_channel'] ?? [] as $key => $value) : ?>
                                 <ul class="list-group list-group-flush">
                                     <li>
-                                        <?= PaymentCategories::findOne($value)->name ?> | <?= PaymentCategories::getStatusList()[PaymentCategories::findOne($value)->status] ?>
+                                        <?= PaymentChannels::findOne($value)?->name ?> | <?= PaymentChannels::getStatusList()[PaymentChannels::findOne($value)?->status] ?>
                                     </li>
                                 </ul>
                             <?php endforeach; ?>

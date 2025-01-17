@@ -36,6 +36,13 @@ class EdcController extends Controller
                         'delete-category' => ['POST'],
                         'restore-vendor' => ['POST'],
                         'restore-category' => ['POST'],
+                        'delete-channel' => ['POST'],
+                        'restore-channel' => ['POST'],
+                        'delete-account' => ['POST'],
+                        'restore-account' => ['POST'],
+                        'delete-outlet' => ['POST'],
+                        'restore-outlet' => ['POST'],
+                        'delete-serial-key' => ['POST'],
                     ],
                 ],
                 'ghost-access' => [
@@ -43,11 +50,6 @@ class EdcController extends Controller
                 ],
             ]
         );
-    }
-    
-    public function actionIndex()
-    {
-        return $this->render('index');
     }
 
     /** LIST VENDOR */
