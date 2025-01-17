@@ -13,8 +13,12 @@ use app\models\search\PaymentVendorSearch;
 use app\models\search\PaymentCategoriesSearch;
 use app\models\search\PaymentChannelsSearch;
 use app\components\GlobalFunction;
+use app\models\Outlets;
 use app\models\PaymentAccounts;
+use app\models\search\OutletsSearch;
 use app\models\search\PaymentAccountsSearch;
+use app\models\search\SerialKeysSearch;
+use app\models\SerialKeys;
 use yii\helpers\ArrayHelper;
 use yii\web\UploadedFile;
 
@@ -737,6 +741,310 @@ class EdcController extends Controller
 
         throw new NotFoundHttpException('The requested page does not exist.');
     }
+
+    // Outlet
+
+    public function actionOutlet()
+    {
+        $searchModel = new OutletsSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('outlet', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionListDeletedOutlet()
+    {
+        $searchModel = new OutletsSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, true);
+
+        return $this->render('list-deleted-outlet', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionCreateOutlet()
+    {
+        $model = new Outlets();
+
+        if ($this->request->isPost) {
+            if ($model->load($this->request->post()) && $model->validate()) {
+                $detailInfo = GlobalFunction::changeLogCreate();
+                $detailInfo['address'] = $model->address ?? null;
+                $model->detail_info = $detailInfo;
+                $model->save();
+                Yii::$app->session->setFlash('success', 'Outlet created successfully.');
+                return $this->redirect(['view-outlet', 'id' => $model->id]);
+            }
+        }
+
+        return $this->render('create-outlet', [
+            'model' => $model,
+        ]);
+    }
+
+    public function actionViewOutlet($id)
+    {
+        return $this->render('view-outlet', [
+            'model' => $this->findModelOutlet($id),
+        ]);
+    }
+
+    public function actionUpdateOutlet($id)
+    {
+        $model = $this->findModelOutlet($id);
+
+        if ($this->request->isPost && $model->load($this->request->post()) && $model->validate()) {
+            $detailInfo = GlobalFunction::changeLogUpdate($model->detail_info);
+            $detailInfo['address'] = $model->address ?? null;
+            $model->detail_info = $detailInfo;
+            $model->save();
+            Yii::$app->session->setFlash('success', 'Outlet updated successfully.');
+            return $this->redirect(['view-outlet', 'id' => $model->id]);
+        }
+
+        return $this->render('update-outlet', [
+            'model' => $model,
+        ]);
+    }
+
+    public function actionSortOutletCategory($id)
+    {
+        $model = $this->findModelOutlet($id);
+
+        $dataCategory = $model->detail_info['payment_category'] ?? [];
+        if(!empty($dataCategory)) {
+            $getAllCategory = PaymentCategories::find()->where(['!=', 'status', PaymentCategories::STATUS_DELETED])
+                            ->andWhere(['NOT IN', 'id', $dataCategory])
+                            ->all();
+        } else {
+            $getAllCategory = PaymentCategories::find()->where(['!=', 'status', PaymentCategories::STATUS_DELETED])->all();
+        }
+        
+        $availableCategory = [];
+        foreach($getAllCategory as $category) {
+            $availableCategory[$category->id] = ['content' => $category->name . ' | ' . $category->getStatusList()[$category->status]];
+        }
+
+        $alreadySaveCategory = [];
+        if(!empty($dataCategory)) {
+            foreach($dataCategory ?? [] as $id) {
+                $alreadySave = PaymentCategories::findOne($id);
+                $alreadySaveCategory[$alreadySave->id] = ['content' => $alreadySave->name . ' | ' . $alreadySave->getStatusList()[$alreadySave->status] ];
+            }
+        }
+
+        if ($this->request->isPost) {
+            $model->load($this->request->post() && $model->validate());
+            
+            $aBeforeSave = explode(',', $_POST['Outlets']['sortCategory']);
+            $arraySave = [];
+            foreach($aBeforeSave as $key => $value) {
+                $arraySave[] = intval($value);
+            }
+            $detailInfo = $model->detail_info;
+            $detailInfo['payment_category'] = $arraySave;
+            $model->detail_info = $detailInfo;
+            $model->save(false);
+            Yii::$app->session->setFlash('success', 'Outlet updated successfully.');
+            return $this->redirect(['view-outlet', 'id' => $model->id]);
+        }
+
+        return $this->render('sort-outlet-category', [
+            'model' => $model,
+            'availableCategory' => $availableCategory,
+            'alreadySaveCategory' => $alreadySaveCategory
+        ]);
+    }
+
+    public function actionSortOutletChannel($id)
+    {
+        $model = $this->findModelOutlet($id);
+        if(!isset($model->detail_info['payment_category'])) {
+            Yii::$app->session->setFlash('error', 'Please setup payment category first.');
+            return $this->redirect(['view-outlet', 'id' => $model->id]);
+        }
+
+        $dataChannel = $model->detail_info['payment_channel'] ?? [];
+        if(!empty($dataChannel)) {
+            $getAllChannel = PaymentChannels::find()->where(['!=', 'status', PaymentChannels::STATUS_DELETED])
+                            ->andWhere(['NOT IN', 'id', $dataChannel])
+                            ->andWhere(['IN', 'payment_category_id', $model->detail_info['payment_category']])
+                            ->all();
+        } else {
+            $getAllChannel = PaymentChannels::find()->where(['!=', 'status', PaymentChannels::STATUS_DELETED])
+                            ->andWhere(['IN', 'payment_category_id', $model->detail_info['payment_category']])->all();
+        }
+
+        $availableChannel = [];
+        foreach($getAllChannel as $channel) {
+            $availableChannel[$channel->id] = ['content' => $channel->name . ' | ' . $channel->getStatusList()[$channel->status]];
+        }
+
+        $alreadySaveChannel = [];
+        if(!empty($dataChannel)) {
+            foreach($dataChannel ?? [] as $id) {
+                $alreadySave = PaymentChannels::findOne($id);
+                $alreadySaveChannel[$alreadySave->id] = ['content' => $alreadySave->name . ' | ' . $alreadySave->getStatusList()[$alreadySave->status] ];
+            }
+        }
+
+        if ($this->request->isPost) {
+            $model->load($this->request->post() && $model->validate());
+            
+            $aBeforeSave = explode(',', $_POST['Outlets']['sortChannel']);
+            $arraySave = [];
+            foreach($aBeforeSave as $key => $value) {
+                $arraySave[] = intval($value);
+            }
+            $detailInfo = $model->detail_info;
+            $detailInfo['payment_channel'] = $arraySave;
+            $model->detail_info = $detailInfo;
+            $model->save(false);
+            Yii::$app->session->setFlash('success', 'Outlet updated successfully.');
+            return $this->redirect(['view-outlet', 'id' => $model->id]);
+        }
+
+        return $this->render('sort-outlet-channel', [
+            'model' => $model,
+            'availableChannel' => $availableChannel,
+            'alreadySaveChannel' => $alreadySaveChannel
+        ]);
+    }
+
+    public function actionDeleteOutlet($id)
+    {
+        $model = Outlets::findOne($id);
+        $model->status = Outlets::STATUS_DELETED;
+        $detailInfo = GlobalFunction::changeLogDelete($model->detail_info);
+        $model->detail_info = $detailInfo;
+        $model->save();
+        Yii::$app->session->setFlash('success', 'Outlet deleted successfully.');
+        return $this->redirect(['outlet']);
+    }
+
+    public function actionRestoreOutlet($id)
+    {
+        $model = Outlets::findOne($id);
+        if($model->status != Outlets::STATUS_DELETED) {
+            Yii::$app->session->setFlash('error', 'Data not has been deleted.');
+            return $this->redirect(['list-deleted-outlet']);
+        }
+        $model->status = Outlets::STATUS_INACTIVE;
+        $detailInfo = GlobalFunction::changeLogRestore($model->detail_info);
+        $model->detail_info = $detailInfo;
+        $model->save();
+        Yii::$app->session->setFlash('success', 'Outlet restored successfully.');
+        return $this->redirect(['list-deleted-outlet']);
+    }
+
+    protected function findModelOutlet($id)
+    {
+        if (($model = Outlets::find()->where(['id' => $id])->andWhere(['!=', 'status', Outlets::STATUS_DELETED])->one()) !== null) {
+            return $model;
+        }    
+
+        throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    // SERIAL KEY
+
+    public function actionSerialKey()
+    {
+        $searchModel = new SerialKeysSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('serial-key', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionListDeletedSerialKey()
+    {
+        $searchModel = new SerialKeysSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, true);
+
+        return $this->render('list-deleted-serial-key', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionCreateSerialKey()
+    {
+        $model = new SerialKeys();
+
+        $model->status = SerialKeys::STATUS_ACTIVE;
+        if ($this->request->isPost) {
+            if ($model->load($this->request->post()) && $model->validate()) {
+                $checkCode = SerialKeys::find()->where(['activation_code' => $model->activation_code])->one();
+                if(!empty($checkCode)) {
+                    Yii::$app->session->setFlash('error', 'Activation code already exist.');
+                    return $this->redirect(['create-serial-key']);
+                }
+                $checkOutlet = Outlets::find()->where(['id' => $model->outlet_id])->andWhere(['!=', 'status', Outlets::STATUS_DELETED])->one();
+                if(empty($checkOutlet)) {
+                    Yii::$app->session->setFlash('error', 'Outlet not found.');
+                    return $this->redirect(['create-serial-key']);
+                }
+                $detailInfo = GlobalFunction::changeLogCreate();
+                $detailInfo['outlet']['name'] = $checkOutlet->name;
+                $detailInfo['outlet']['id'] = $checkOutlet->id;
+                $model->detail_info = $detailInfo;
+                // remove all spaces in activation code
+                $model->activation_code = str_replace(' ', '', $model->activation_code);
+                $model->save();
+                Yii::$app->session->setFlash('success', 'Serial Key created successfully.');
+                return $this->redirect(['view-serial-key', 'id' => $model->id]);
+            }
+        } else {
+            $model->loadDefaultValues();
+        }
+
+        $outlet = Outlets::find()->where(['!=', 'status', Outlets::STATUS_DELETED])->all();
+        $availableOutlet = [];
+        foreach($outlet as $out) {
+            $availableOutlet[$out->id] = $out->name;
+        }
+
+        return $this->render('create-serial-key', [
+            'model' => $model,
+            'availableOutlet' => $availableOutlet
+        ]);
+    }
+
+    public function actionViewSerialKey($id)
+    {
+        return $this->render('view-serial-key', [
+            'model' => $this->findModelSerialKey($id),
+        ]);
+    }
+
+    public function actionDeleteSerialKey($id)
+    {
+        $model = SerialKeys::findOne($id);
+        $model->status = SerialKeys::STATUS_DELETED;
+        $detailInfo = GlobalFunction::changeLogDelete($model->detail_info);
+        $model->detail_info = $detailInfo;
+        $model->save();
+        Yii::$app->session->setFlash('success', 'Serial Key deleted successfully.');
+        return $this->redirect(['serial-key']);
+    }
+
+    protected function findModelSerialKey($id)
+    {
+        if (($model = SerialKeys::find()->where(['id' => $id])->andWhere(['!=', 'status', SerialKeys::STATUS_DELETED])->one()) !== null) {
+            return $model;
+        }
+
+        throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+
 
  
 }

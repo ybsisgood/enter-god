@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "serial_keys".
@@ -17,6 +18,15 @@ use Yii;
  */
 class SerialKeys extends \yii\db\ActiveRecord
 {
+    const STATUS_INACTIVE = 0;
+    const STATUS_ACTIVE = 1;
+    const STATUS_CLAIMED = 2;
+    const STATUS_EXPIRED = 3;
+    const STATUS_DELETED = 4;
+    const STATUS_MAINTENANCE = 5;
+
+    const SCENARIO_CREATE = 'create';
+    const SCENARIO_UPDATE = 'update';
     /**
      * {@inheritdoc}
      */
@@ -39,7 +49,7 @@ class SerialKeys extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'outlet_id'], 'required'],
+            [['name', 'outlet_id', 'status', 'activation_code'], 'required'],
             [['outlet_id', 'status'], 'integer'],
             [['detail_info'], 'safe'],
             [['name', 'activation_code'], 'string', 'max' => 255],
@@ -71,5 +81,25 @@ class SerialKeys extends \yii\db\ActiveRecord
     public static function find()
     {
         return new \app\models\query\SerialKeysQuery(get_called_class());
+    }
+
+    public function getOutlet() {
+        return $this->hasOne(Outlets::className(), ['id' => 'outlet_id']);
+    }
+
+    public static function getOutletList() {
+        $outlet = Outlets::find()->where(['!=', 'status', Outlets::STATUS_DELETED])->all();
+        return ArrayHelper::map($outlet, 'id', 'name');
+    }
+
+    public static function getStatusList() {
+        return [
+            self::STATUS_INACTIVE => 'Inactive',
+            self::STATUS_ACTIVE => 'Active',
+            self::STATUS_CLAIMED => 'Claimed',
+            self::STATUS_EXPIRED => 'Expired',
+            self::STATUS_DELETED => 'Deleted',
+            self::STATUS_MAINTENANCE => 'Maintenance',
+        ];
     }
 }
