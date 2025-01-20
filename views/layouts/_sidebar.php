@@ -50,6 +50,7 @@ use ybsisgood\modules\UserManagement\models\User;
                         <li><a href="<?= Url::toRoute(['/edc/category']) ?>" key="t-list-category">Category</a></li>
                         <li><a href="<?= Url::toRoute(['/edc/channel']) ?>" key="t-list-channel">Channel</a></li>
                         <li><a href="<?= Url::toRoute(['/edc/outlet']) ?>" key="t-list-outlet">Outlet</a></li>
+                        <li><a href="<?= Url::toRoute(['/edc/payment']) ?>" key="t-list-payment">Payment</a></li>
                         <li><a href="<?= Url::toRoute(['/edc/serial-key']) ?>" key="t-list-serial-key">Serial Key</a></li>
                         <li><a href="<?= Url::toRoute(['/edc/vendor']) ?>" key="t-list-vendor">Vendor</a></li>
                     </ul>

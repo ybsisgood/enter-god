@@ -5,9 +5,11 @@ use Faker\Provider\ar_EG\Payment;
 use yii\helpers\Html;
 use kartik\form\ActiveForm;
 use kartik\select2\Select2;
+use kartik\depdrop\DepDrop;
 use kartik\markdown\MarkdownEditor;
 use kartik\number\NumberControl;
 use kdn\yii2\JsonEditor;
+use yii\helpers\Url;
 
 /** @var yii\web\View $this */
 /** @var app\models\PaymentAccounts $model */
@@ -37,59 +39,64 @@ unset($listStatus[PaymentAccounts::STATUS_DELETED]);
         <div class="col-12 col-md-6">
             <div class="card">
                 <div class="card-body">
+                    <?= $form->field($model, 'payment_vendor_id')->widget(Select2::classname(), [
+                        'data' => $vendorList,
+                        'options' => ['placeholder' => 'Select a vendor ...'],
+                        'pluginOptions' => [
+                            'allowClear' => true
+                        ]
+                    ])?>
+
+                    <?= $form->field($model, 'payment_category_id')->widget(Select2::classname(), [
+                        'data' => $categoryList,
+                        'options' => ['placeholder' => 'Select a category ...', 'id' => 'cat1-id'],
+                        'pluginOptions' => [
+                            'allowClear' => true
+                        ],
+                        'id' => 'payment-category-id'
+                    ])?>
+
+                    <?= $form->field($model, 'payment_channel_id')->widget(DepDrop::classname(), [
+                        'type' => DepDrop::TYPE_SELECT2,
+                        'data' => [
+                            $model->payment_channel_id => $channelList[$model->payment_channel_id],
+                        ],
+                        'options' => ['id' => 'channel-id', 'placeholder' => 'Select ...'],
+                        'select2Options' => ['pluginOptions' => ['allowClear' => true]],
+                        'pluginOptions' => [
+                            'depends' => ['cat1-id'],
+                            'url' => Url::to(['/edc/list-channel']),
+                            'params' => ['input-type-1', 'input-type-2']
+                        ]
+                        ]);
+                    ?>
+
+                    <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
+
+                    <?= $form->field($model, 'detail_keys')->widget(
+                            JsonEditor::class,
+                            [
+                                'clientOptions' => ['modes' => ['code', 'tree'],'mode' => 'code'],
+                                'decodedValue' => $model->isNewRecord ? [] : $model->detail_keys,
+                            ]
+                        );
+
+                    ?>
+
+                    <?= $form->field($model, 'extra_code')->textInput(['maxlength' => true]) ?>
+
+                    <?= $form->field($model, 'status')->widget(Select2::classname(), [
+                        'data' => $listStatus,
+                        'options' => ['placeholder' => 'Select a status ...'],
+                        'pluginOptions' => [
+                            'allowClear' => true
+                        ],
+                    ]); ?>
                     
-
-                        <?= $form->field($model, 'payment_vendor_id')->widget(Select2::classname(), [
-                            'data' => $vendorList,
-                            'options' => ['placeholder' => 'Select a vendor ...'],
-                            'pluginOptions' => [
-                                'allowClear' => true
-                            ]
-                        ])?>
-
-                        <?= $form->field($model, 'payment_category_id')->widget(Select2::classname(), [
-                            'data' => $categoryList,
-                            'options' => ['placeholder' => 'Select a category ...'],
-                            'pluginOptions' => [
-                                'allowClear' => true
-                            ]
-                        ])?>
-
-                        <?= $form->field($model, 'payment_channel_id')->widget(Select2::classname(), [
-                            'data' => $channelList,
-                            'options' => ['placeholder' => 'Select a channel ...'],
-                            'pluginOptions' => [
-                                'allowClear' => true
-                            ]
-                        ])?>
-
-                        <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
-
-                        <?= $form->field($model, 'detail_keys')->widget(
-                                JsonEditor::class,
-                                [
-                                    'clientOptions' => ['modes' => ['code', 'tree'],'mode' => 'code'],
-                                    'decodedValue' => $model->isNewRecord ? [] : $model->detail_keys,
-                                ]
-                            );
-
-                        ?>
-
-                        <?= $form->field($model, 'status')->widget(Select2::classname(), [
-                            'data' => $listStatus,
-                            'options' => ['placeholder' => 'Select a status ...'],
-                            'pluginOptions' => [
-                                'allowClear' => true
-                            ],
-                        ]); ?>
-                        
-                        <?= $form->field($model, 'how_to_payment')->widget(
-                            MarkdownEditor::classname(), 
-                            ['height' => 300, 'encodeLabels' => false]
-                        ); ?>
-
-                    
-
+                    <?= $form->field($model, 'how_to_payment')->widget(
+                        MarkdownEditor::classname(), 
+                        ['height' => 300, 'encodeLabels' => false]
+                    ); ?>
                 </div>
             </div>
         </div>

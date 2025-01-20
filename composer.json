@@ -30,7 +30,9 @@
         "kartik-v/yii2-sortable-input": "dev-master",
         "kartik-v/yii2-markdown": "dev-master",
         "kdn/yii2-json-editor": "*",
-        "kartik-v/yii2-number": "dev-master"
+        "kartik-v/yii2-number": "dev-master",
+        "kartik-v/yii2-widget-depdrop": "dev-master",
+        "kartik-v/yii2-date-range": "dev-master"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.1.0",

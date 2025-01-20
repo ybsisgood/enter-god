@@ -15,8 +15,10 @@ use app\models\search\PaymentChannelsSearch;
 use app\components\GlobalFunction;
 use app\models\Outlets;
 use app\models\PaymentAccounts;
+use app\models\Payments;
 use app\models\search\OutletsSearch;
 use app\models\search\PaymentAccountsSearch;
+use app\models\search\PaymentsSearch;
 use app\models\search\SerialKeysSearch;
 use app\models\SerialKeys;
 use yii\helpers\ArrayHelper;
@@ -112,11 +114,23 @@ class EdcController extends Controller
     {
         $model = $this->findModelVendor($id);
         $model->scenario = PaymentVendor::SCENARIO_UPDATE;
+        $oldName = $model->name;
+        $oldCode = $model->code;
         if ($this->request->isPost && $model->load($this->request->post()) && $model->validate()) {
             $model->status = intval($model->status);
             if(empty($model->getDirtyAttributes())) {
                 Yii::$app->session->setFlash('success', 'Nothing has been changed.');
                 return $this->redirect(['view-vendor', 'id' => $model->id]);
+            }
+            if($model->name != $oldName || $model->code != $oldCode) {
+                $checkPayment = PaymentAccounts::find()->where(['payment_vendor_id' => $model->id])->all();
+                foreach($checkPayment as $payment) {
+                    $detailPayment = $payment->detail_info;
+                    $detailPayment['vendor']['name'] = $model->name;
+                    $detailPayment['vendor']['code'] = $model->code;
+                    $payment->detail_info = $detailPayment;
+                    $payment->save();
+                }
             }
             $detailInfo = GlobalFunction::changeLogUpdate($model->detail_info);
             $model->detail_info = $detailInfo;
@@ -133,6 +147,11 @@ class EdcController extends Controller
     public function actionDeleteVendor($id)
     {
         $model = $this->findModelVendor($id);
+        $searchPayment = PaymentAccounts::find()->where(['payment_vendor_id' => $model->id])->one();
+        if(!empty($searchPayment)) {
+            Yii::$app->session->setFlash('error', 'Vendor has been used in payment account.');
+            return $this->redirect(['view-vendor', 'id' => $model->id]);
+        }
         $model->status = PaymentVendor::STATUS_DELETED;
         $detailInfo = GlobalFunction::changeLogDelete($model->detail_info);
         $model->detail_info = $detailInfo;
@@ -222,7 +241,7 @@ class EdcController extends Controller
     {
         $model = $this->findModelCategory($id);
         $model->scenario = PaymentCategories::SCENARIO_UPDATE;
-        $oldCode = $model->code;
+        $oldName = $model->name;
         if ($this->request->isPost && $model->load($this->request->post()) && $model->validate()) {
             $model->status = intval($model->status);
             if(empty($model->getDirtyAttributes())) {
@@ -230,11 +249,20 @@ class EdcController extends Controller
                 return $this->redirect(['view-category', 'id' => $model->id]);
             }
             $detailInfo = GlobalFunction::changeLogUpdate($model->detail_info);
-            if($model->code != $oldCode) {
-                $checkCode = PaymentCategories::find()->where(['code' => $model->code])->one();
-                if(!empty($checkCode)) {
-                    Yii::$app->session->setFlash('error', 'Code already exists.');
-                    return $this->redirect(['update-category', 'id' => $model->id]);
+            if($model->name != $oldName) {
+                $checkChannel = PaymentChannels::find()->where(['payment_category_id' => $model->id])->all();
+                foreach($checkChannel as $channel) {
+                    $detailInfoChannel = $channel->detail_info;
+                    $detailInfoChannel['category']['name'] = $model->name;
+                    $channel->detail_info = $detailInfoChannel;
+                    $channel->save();
+                }
+                $chAccountPayment = PaymentAccounts::find()->where(['payment_category_id' => $model->id])->all();
+                foreach($chAccountPayment as $payment) {
+                    $detailInfoPayment = $payment->detail_info;
+                    $detailInfoPayment['category']['name'] = $model->name;
+                    $payment->detail_info = $detailInfoPayment;
+                    $payment->save();
                 }
             }
             $model->detail_info = $detailInfo;
@@ -277,6 +305,18 @@ class EdcController extends Controller
     public function actionDeleteCategory($id)
     {
         $model = PaymentCategories::findOne($id);
+        $checkChannel = PaymentChannels::find()->where(['payment_category_id' => $model->id])->one();
+        if(!empty($checkChannel)) {
+            Yii::$app->session->setFlash('error', 'Data has been used in Channel.');
+            return $this->redirect(['category']);
+        }
+
+        $checkAccount = PaymentAccounts::find()->where(['payment_category_id' => $model->id])->one();
+        if(!empty($checkAccount)) {
+            Yii::$app->session->setFlash('error', 'Data has been used in Payment Account.');
+            return $this->redirect(['category']);
+        }
+
         $model->status = PaymentCategories::STATUS_DELETED;
         $detailInfo = GlobalFunction::changeLogDelete($model->detail_info);
         $model->detail_info = $detailInfo;
@@ -418,17 +458,30 @@ class EdcController extends Controller
         $model->scenario = PaymentChannels::SCENARIO_UPDATE;
         $oldCode = $model->code;
         $oldCategory = $model->payment_category_id;
+        $oldName = $model->name;
         if ($this->request->isPost && $model->load($this->request->post()) && $model->validate()) {
             $model->status = intval($model->status);
+            $model->payment_category_id = intval($model->payment_category_id);
             if(empty($model->getDirtyAttributes())) {
                 Yii::$app->session->setFlash('success', 'Nothing has been changed.');
                 return $this->redirect(['view-channel', 'id' => $model->id]);
             }
-            if($model->code != $oldCode) {
-                $checkCode = PaymentChannels::find()->where(['code' => $model->code])->one();
+            if($model->code != $oldCode || $model->name != $oldName) {
+                $checkCode = PaymentChannels::find()
+                    ->where(['!=', 'id', $model->id])
+                    ->andWhere(['code' => $model->code])
+                    ->andWhere(['!=', 'status', PaymentChannels::STATUS_DELETED])->one();
                 if(!empty($checkCode)) {
                     Yii::$app->session->setFlash('error', 'Code already exists.');
                     return $this->redirect(['update-channel', 'id' => $model->id]);
+                }
+                $codePaymentAccount = PaymentAccounts::find()->where(['payment_channel_id' => $model->id])->all();
+                foreach ($codePaymentAccount as $key => $v) {
+                    $detail_info = $v->detail_info;
+                    $detail_info['channel']['code'] = $model->code;
+                    $detail_info['channel']['name'] = $model->name;
+                    $v->detail_info = $detail_info;
+                    $v->save();
                 }
             }
             $detailInfo = GlobalFunction::changeLogUpdate($model->detail_info);
@@ -438,8 +491,18 @@ class EdcController extends Controller
                     Yii::$app->session->setFlash('error', 'Category not found.');
                     return $this->redirect(['update-channel', 'id' => $model->id]);
                 }
-                $detailInfo['category']['name'] = $getCategory->name;
                 $detailInfo['category']['id'] = $model->payment_category_id;
+                $detailInfo['category']['name'] = $getCategory->name;
+                // change child account
+                $childAccount = PaymentAccounts::find()->where(['payment_channel_id' => $model->id])->all();
+                foreach ($childAccount as $key => $value) {
+                    $value->payment_category_id = $model->payment_category_id;
+                    $detailInfoAccount = $value->detail_info;
+                    $detailInfoAccount['category']['id'] = $model->payment_category_id;
+                    $detailInfoAccount['category']['name'] = $getCategory->name;
+                    $value->detail_info = $detailInfoAccount;
+                    $value->save();
+                }
             }
             $model->detail_info = $detailInfo;
             $model->save();
@@ -512,9 +575,32 @@ class EdcController extends Controller
         ]);
     }
 
+    public function actionListChannel() {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $out = [];
+        if (isset($_POST['depdrop_parents'])) {
+            $parents = $_POST['depdrop_parents'];
+            if ($parents != null) {
+                $cat_id = $parents[0];
+                $out = [];
+                $lp = PaymentChannels::find()->where(['!=', 'status', PaymentChannels::STATUS_DELETED])->andWhere(['payment_category_id' => $cat_id])->orderBy(['sort' => SORT_ASC])->all();
+                foreach ($lp as $l) {
+                    $out[] = ['id' => $l->id, 'name' => $l->name];
+                }
+                return ['output'=>$out, 'selected'=>''];
+            }
+        }
+        return ['output'=>'', 'selected'=>''];
+    }
+
     public function actionDeleteChannel($id)
     {
         $model = $this->findModelChannel($id);
+        $checkAccount = PaymentAccounts::find()->where(['payment_channel_id' => $model->id])->one();
+        if(!empty($checkAccount)) {
+            Yii::$app->session->setFlash('error', 'Data has been used in payment accounts.');
+            return $this->redirect(['channel']);
+        }
         $model->status = PaymentChannels::STATUS_DELETED;
         $detailInfo = GlobalFunction::changeLogDelete($model->detail_info);
         $model->detail_info = $detailInfo;
@@ -1048,7 +1134,50 @@ class EdcController extends Controller
         throw new NotFoundHttpException('The requested page does not exist.');
     }
 
+    // PAYMENT
 
+    public function actionPayment()
+    {
+        $searchModel = new PaymentsSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, Payments::STATUS_WAITING_PAYMENT);
 
- 
+        return $this->render('payment', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionPaymentCompleted()
+    {
+        $searchModel = new PaymentsSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, Payments::STATUS_PAID);
+
+        return $this->render('payment-completed', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionPaymentRefund()
+    {
+        $searchModel = new PaymentsSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, Payments::STATUS_REFUND);
+
+        return $this->render('payment-refund', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionPaymentExpired()
+    {
+        $searchModel = new PaymentsSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, Payments::STATUS_EXPIRED);
+
+        return $this->render('payment-expired', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
 }
