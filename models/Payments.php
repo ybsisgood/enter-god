@@ -31,7 +31,7 @@ class Payments extends \yii\db\ActiveRecord
     const STATUS_WAITING_PAYMENT = 1;
     const STATUS_PAID = 3;
     const STATUS_REFUND = 4;
-    const STATUS_EXPIRED = 6;
+    const STATUS_EXPIRED = 2;
 
     /**
      * {@inheritdoc}
