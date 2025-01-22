@@ -16,6 +16,7 @@ use app\components\GlobalFunction;
 use app\models\Outlets;
 use app\models\PaymentAccounts;
 use app\models\Payments;
+use app\models\search\LogWalletVendorSearch;
 use app\models\search\OutletsSearch;
 use app\models\search\PaymentAccountsSearch;
 use app\models\search\PaymentsSearch;
@@ -105,8 +106,13 @@ class EdcController extends Controller
     public function actionViewVendor($id)
     {
         $model = $this->findModelVendor($id);
+        $searchModel = new LogWalletVendorSearch();
+        $dataProvider = $searchModel->search($this->request->queryParams, $model->id);
+
         return $this->render('view-vendor', [
             'model' => $model,
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
         ]);
     }
 

@@ -44,6 +44,12 @@ $this->params['breadcrumbs'][] = $this->title;
                     'name',
                     'code',
                     [
+                        'attribute' => 'Wallet',
+                        'value' => function ($model) {
+                            return number_format($model->wallet, 2);
+                        }
+                    ],
+                    [
                         'attribute' => 'status',
                         'value' => function ($model) {
                             return PaymentVendor::getStatusList()[$model->status];
