@@ -1211,7 +1211,7 @@ class EdcController extends Controller
         $models = $dataProvider->getModels();
 
         $output = '';
-        $output .= "No,Invoice Number,Remark,Outlet,Vendor,Category,Channel,Device,Created By,Payment Date,Total Payment,MDR,Our Wallet,Status,TRX ID Vendor\n";
+        $output .= "No;Invoice Number;Remark;Outlet;Vendor;Category;Channel;Device;Created By;Payment Date;Total Payment;MDR;Our Wallet;Status;TRX ID Vendor\n";
 
         $i = 1;
         foreach ($models as $model) {
@@ -1224,12 +1224,12 @@ class EdcController extends Controller
             $device = $model->detail_payment['device'] ?? '';
             $createdBy = $model->detail_info['changelog']['created_by'] ?? '';
             $paymentDate = $model->payment_at ?? '';
-            $totalPayment = $model->total;
-            $mdr = $model->mdr;
-            $ourWallet = $model->subtotal;
+            $totalPayment = number_format($model->total, 2);
+            $mdr = number_format($model->mdr, 2);
+            $ourWallet = number_format($model->our_wallet, 2);
             $status = Payments::getStatusList()[$model->status];
             $trxIdVendor = $model->detail_payment['trx_id'] ?? '';
-            $output .= "$i,$invoice,$remark,$outlet,$vendor,$category,$channel,$device,$createdBy,$paymentDate,$totalPayment,$mdr,$ourWallet,$status,$trxIdVendor\n";
+            $output .= "$i;$invoice;$remark;$outlet;$vendor;$category;$channel;$device;$createdBy;$paymentDate;$totalPayment;$mdr;$ourWallet;$status;$trxIdVendor\n";
             $i++;
         }
         $extraTitle = '';
