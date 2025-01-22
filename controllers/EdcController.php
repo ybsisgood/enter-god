@@ -1224,9 +1224,9 @@ class EdcController extends Controller
             $device = $model->detail_payment['device'] ?? '';
             $createdBy = $model->detail_info['changelog']['created_by'] ?? '';
             $paymentDate = $model->payment_at ?? '';
-            $totalPayment = number_format($model->total, 2);
-            $mdr = number_format($model->mdr, 2);
-            $ourWallet = number_format($model->subtotal, 2);
+            $totalPayment = number_format($model->total, 2, '.', ',');
+            $mdr = number_format($model->mdr, 2, '.', ',');
+            $ourWallet = number_format($model->subtotal, 2, '.', ',');
             $status = Payments::getStatusList()[$model->status];
             $trxIdVendor = $model->detail_payment['trx_id'] ?? '';
             $output .= "$i;$invoice;$remark;$outlet;$vendor;$category;$channel;$device;$createdBy;$paymentDate;$totalPayment;$mdr;$ourWallet;$status;$trxIdVendor\n";
