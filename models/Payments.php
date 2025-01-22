@@ -33,6 +33,8 @@ class Payments extends \yii\db\ActiveRecord
     const STATUS_REFUND = 4;
     const STATUS_EXPIRED = 2;
 
+    public $datetime_min;
+    public $datetime_max;
     /**
      * {@inheritdoc}
      */

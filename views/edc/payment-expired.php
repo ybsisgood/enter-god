@@ -25,118 +25,119 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <div class="card">
         <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-12">
+                    <?= Html::a('Reset Filter', ['payment-expired'], ['class' => 'btn btn-outline-primary btn-sm mb-1 waves-effect waves-light float-end']) ?>
+                </div>
+            </div>
             <div class="row">
-                <div class="col-12 col-md-6">
-
+                <div class="col-12">
+                    <?= GridView::widget([
+                        'dataProvider' => $dataProvider,
+                        'filterModel' => $searchModel,
+                        'responsiveWrap' => false,
+                        'options' => [
+                            'id' => 'align-items-middle'
+                        ],
+                        'columns' => [
+                            ['class' => 'kartik\grid\SerialColumn'],
+                            // 'id',
+                            'invoice_number',
+                            'remark',
+                            [
+                                'header' => 'Outlet',
+                                'attribute' => 'outletName',
+                                'value' => function ($model) {
+                                    return $model->detail_payment['outlet'] ?? '';
+                                }
+                            ],
+                            [
+                                'header' => 'Vendor',
+                                'attribute' => 'vendorName',
+                                'value' => function ($model) {
+                                    return $model->detail_payment['vendor'] ?? '';
+                                }
+                            ],
+                            [
+                                'header' => 'Category',
+                                'attribute' => 'categoryName',
+                                'value' => function ($model) {
+                                    return $model->detail_payment['category'] ?? '';
+                                }
+                            ],
+                            [
+                                'header' => 'Channel',
+                                'attribute' => 'channelName',
+                                'value' => function ($model) {
+                                    return $model->detail_payment['channel'] ?? '';
+                                }
+                            ],
+                            [
+                                'header' => 'Device',
+                                'attribute' => 'deviceName',
+                                'value' => function ($model) {
+                                    return $model->detail_payment['device'] ?? '';
+                                }
+                            ],
+                            [
+                                'header' => 'Created By',
+                                'attribute' => 'createdBy',
+                                'value' => function ($model) {
+                                    return $model->detail_info['changelog']['created_by'] ?? '';
+                                }
+                            ],
+                            [
+                                'header' => 'Expire Date',
+                                'value' => function ($model) {
+                                    return $model->expired_at ? date('H:i - d-m-Y', strtotime($model->expired_at)) : '';
+                                }
+                            ],
+                            [
+                                'header' => 'Total Payment',
+                                'hAlign' => 'right',
+                                'value' => function ($model) {
+                                    return number_format($model->total, 2, '.', ',');
+                                }
+                            ],
+                            [
+                                'header' => 'MDR',
+                                'hAlign' => 'right',
+                                'value' => function ($model) {
+                                    return number_format($model->mdr, 2, '.', ',');
+                                }
+                            ],
+                            [
+                                'header' => 'Our Wallet',
+                                'hAlign' => 'right',
+                                'value' => function ($model) {
+                                    return number_format($model->subtotal, 2, '.', ',');
+                                }
+                            ],
+                            [
+                                'attribute' => 'status',
+                                'filter' => false,
+                                'value' => function ($model) {
+                                    return Payments::getStatusList()[$model->status];
+                                }
+                            ]
+                            // 'payment_channel_id',
+                            // 'payment_vendor_id',
+                            // 'payment_category_id',
+                            // 'serial_key_id',
+                            // 'outlet_id',
+                            // 'subtotal',
+                            // 'mdr',
+                            // 'total',
+                            //'status',
+                            //'created_at',
+                            //'expired_at',
+                            //'payment_at',
+                            //'detail_payment',
+                            //'detail_info',
+                            
+                        ],
+                    ]); ?>
                 </div>
-                <div class="col-12 col-md-6">
-                    <?= Html::a('Reset Filter', ['payment'], ['class' => 'btn btn-outline-primary btn-sm mb-1 waves-effect waves-light float-end']) ?>
-                </div>
-                <?= GridView::widget([
-                    'dataProvider' => $dataProvider,
-                    'filterModel' => $searchModel,
-                    'responsiveWrap' => false,
-                    'options' => [
-                        'id' => 'align-items-middle'
-                    ],
-                    'columns' => [
-                        ['class' => 'kartik\grid\SerialColumn'],
-                        // 'id',
-                        'invoice_number',
-                        'remark',
-                        [
-                            'header' => 'Outlet',
-                            'attribute' => 'outletName',
-                            'value' => function ($model) {
-                                return $model->detail_payment['outlet'] ?? '';
-                            }
-                        ],
-                        [
-                            'header' => 'Vendor',
-                            'attribute' => 'vendorName',
-                            'value' => function ($model) {
-                                return $model->detail_payment['vendor'] ?? '';
-                            }
-                        ],
-                        [
-                            'header' => 'Category',
-                            'attribute' => 'categoryName',
-                            'value' => function ($model) {
-                                return $model->detail_payment['category'] ?? '';
-                            }
-                        ],
-                        [
-                            'header' => 'Channel',
-                            'attribute' => 'channelName',
-                            'value' => function ($model) {
-                                return $model->detail_payment['channel'] ?? '';
-                            }
-                        ],
-                        [
-                            'header' => 'Device',
-                            'attribute' => 'deviceName',
-                            'value' => function ($model) {
-                                return $model->detail_payment['device'] ?? '';
-                            }
-                        ],
-                        [
-                            'header' => 'Created By',
-                            'attribute' => 'createdBy',
-                            'value' => function ($model) {
-                                return $model->detail_info['changelog']['created_by'] ?? '';
-                            }
-                        ],
-                        [
-                            'header' => 'Expire Date',
-                            'value' => function ($model) {
-                                return $model->expired_at ? date('H:i - d-m-Y', strtotime($model->expired_at)) : '';
-                            }
-                        ],
-                        [
-                            'header' => 'Total Payment',
-                            'hAlign' => 'right',
-                            'value' => function ($model) {
-                                return number_format($model->total, 2, '.', ',');
-                            }
-                        ],
-                        [
-                            'header' => 'MDR',
-                            'hAlign' => 'right',
-                            'value' => function ($model) {
-                                return number_format($model->mdr, 2, '.', ',');
-                            }
-                        ],
-                        [
-                            'header' => 'Our Wallet',
-                            'hAlign' => 'right',
-                            'value' => function ($model) {
-                                return number_format($model->subtotal, 2, '.', ',');
-                            }
-                        ],
-                        [
-                            'attribute' => 'status',
-                            'filter' => false,
-                            'value' => function ($model) {
-                                return Payments::getStatusList()[$model->status];
-                            }
-                        ]
-                        // 'payment_channel_id',
-                        // 'payment_vendor_id',
-                        // 'payment_category_id',
-                        // 'serial_key_id',
-                        // 'outlet_id',
-                        // 'subtotal',
-                        // 'mdr',
-                        // 'total',
-                        //'status',
-                        //'created_at',
-                        //'expired_at',
-                        //'payment_at',
-                        //'detail_payment',
-                        //'detail_info',
-                        
-                    ],
-                ]); ?>
             </div>
         </div>
     </div>

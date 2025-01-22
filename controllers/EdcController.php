@@ -1138,8 +1138,27 @@ class EdcController extends Controller
 
     public function actionPayment()
     {
+        $dr = isset($_GET['PaymentsSearch']['createTimeRange']) ? $_GET['PaymentsSearch']['createTimeRange'] : '';
+
+        $sd = null;
+        $ed = null;
+        if(!empty($dr)) {
+            $dr = explode(' - ', urldecode($dr));
+            $startDate = strtotime($dr[0]);
+            $endDate = strtotime($dr[1]);
+            $maxDays = 31 * 24 * 60 * 60; // 31 days in seconds
+
+            if (($endDate - $startDate) > $maxDays) {
+                Yii::$app->session->setFlash('error', 'Maximum date range is 31 days.');
+                return $this->redirect(['payment']);
+            }
+
+            $sd = date('Y-m-d 00:00:00', $startDate);
+            $ed = date('Y-m-d 23:59:59', $endDate);
+        }
+
         $searchModel = new PaymentsSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, Payments::STATUS_WAITING_PAYMENT);
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, Payments::STATUS_WAITING_PAYMENT, $ed, $sd);
 
         return $this->render('payment', [
             'searchModel' => $searchModel,
@@ -1178,6 +1197,51 @@ class EdcController extends Controller
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
+    }
+
+    public function actionDownloadCsv($all = 0)
+    {
+        $searchModel = new PaymentsSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, Payments::STATUS_PAID);
+
+        if ($all == 1) {
+            $dataProvider->pagination = false;
+        }
+
+        $models = $dataProvider->getModels();
+
+        $output = '';
+        $output .= "No,Invoice Number,Remark,Outlet,Vendor,Category,Channel,Device,Created By,Payment Date,Total Payment,MDR,Our Wallet,Status,TRX ID Vendor\n";
+
+        $i = 1;
+        foreach ($models as $model) {
+            $invoice = $model->invoice_number;
+            $remark = $model->remark;
+            $outlet = $model->detail_payment['outlet'] ?? '';
+            $vendor = $model->detail_payment['vendor'] ?? '';
+            $category = $model->detail_payment['category'] ?? '';
+            $channel = $model->detail_payment['channel'] ?? '';
+            $device = $model->detail_payment['device'] ?? '';
+            $createdBy = $model->detail_info['changelog']['created_by'] ?? '';
+            $paymentDate = $model->payment_at ?? '';
+            $totalPayment = $model->total;
+            $mdr = $model->mdr;
+            $ourWallet = $model->subtotal;
+            $status = Payments::getStatusList()[$model->status];
+            $trxIdVendor = $model->detail_payment['trx_id'] ?? '';
+            $output .= "$i,$invoice,$remark,$outlet,$vendor,$category,$channel,$device,$createdBy,$paymentDate,$totalPayment,$mdr,$ourWallet,$status,$trxIdVendor\n";
+            $i++;
+        }
+        $extraTitle = '';
+        if(isset($_GET['PaymentsSearch']['createTimeRange']))
+        {
+            $dr = explode(' - ', urldecode($_GET['PaymentsSearch']['createTimeRange']));
+            $removeClock = date('Y-m-d', strtotime($dr[0]));
+            $removeClock2 = date('Y-m-d', strtotime($dr[1]));
+            $extraTitle = $removeClock . ' - ' . $removeClock2;
+        }
+        Yii::$app->response->setDownloadHeaders('report-payment_' . $extraTitle . '.csv', 'text/csv; charset=UTF-8');
+        return Yii::$app->response->sendContentAsFile($output, 'report-payment_' . $extraTitle . '.csv', ['mimeType' => 'text/csv']);
     }
 
 }

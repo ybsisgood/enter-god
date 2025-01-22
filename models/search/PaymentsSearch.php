@@ -5,6 +5,7 @@ namespace app\models\search;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\Payments;
+use kartik\daterange\DateRangeBehavior;
 
 /**
  * PaymentsSearch represents the model behind the search form of `app\models\Payments`.
@@ -17,6 +18,25 @@ class PaymentsSearch extends Payments
     public $channelName;
     public $deviceName;
     public $createdBy;
+    public $trxIdVendor;
+
+    public $createTimeRange;
+    public $createTimeStart;
+    public $createTimeEnd;
+
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => DateRangeBehavior::className(),
+                'attribute' => 'createTimeRange',
+                'dateStartAttribute' => 'createTimeStart',
+                'dateEndAttribute' => 'createTimeEnd',
+                'dateStartFormat' => 'Y-m-d H:i:s',
+                'dateEndFormat' => 'Y-m-d H:i:s',
+            ]
+        ];
+    }
     /**
      * {@inheritdoc}
      */
@@ -24,8 +44,9 @@ class PaymentsSearch extends Payments
     {
         return [
             [['id', 'payment_account_id', 'payment_channel_id', 'payment_vendor_id', 'payment_category_id', 'serial_key_id', 'outlet_id', 'status'], 'integer'],
-            [['invoice_number', 'remark', 'created_at', 'expired_at', 'payment_at', 'detail_payment', 'detail_info', 'outletName', 'vendorName', 'categoryName', 'channelName', 'deviceName', 'createdBy'], 'safe'],
+            [['invoice_number', 'remark', 'created_at', 'expired_at', 'payment_at', 'detail_payment', 'detail_info', 'outletName', 'vendorName', 'categoryName', 'channelName', 'deviceName', 'createdBy', 'trxIdVendor'], 'safe'],
             [['subtotal', 'mdr', 'total'], 'number'],
+            [['createTimeRange'], 'match', 'pattern' => '/^.+\s\-\s.+$/'],
         ];
     }
 
@@ -45,10 +66,9 @@ class PaymentsSearch extends Payments
      *
      * @return ActiveDataProvider
      */
-    public function search($params, $status = null)
+    public function search($params, $status = null, $startDate = null, $endDate = null)
     {
         $query = Payments::find();
-
         if($status) {
             $query->andWhere(['status' => $status]);
         }
@@ -95,7 +115,10 @@ class PaymentsSearch extends Payments
             ->andFilterWhere(['like', new \yii\db\Expression('LOWER(JSON_EXTRACT(detail_payment, "$.category"))'), mb_strtolower($this->categoryName)])
             ->andFilterWhere(['like', new \yii\db\Expression('LOWER(JSON_EXTRACT(detail_payment, "$.channel"))'), mb_strtolower($this->channelName)])
             ->andFilterWhere(['like', new \yii\db\Expression('LOWER(JSON_EXTRACT(detail_payment, "$.device"))'), mb_strtolower($this->deviceName)])
-            ->andFilterWhere(['like', new \yii\db\Expression('LOWER(JSON_EXTRACT(detail_info, "$.changelog.created_by"))'), mb_strtolower($this->createdBy)]);
+            ->andFilterWhere(['like', new \yii\db\Expression('LOWER(JSON_EXTRACT(detail_info, "$.changelog.created_by"))'), mb_strtolower($this->createdBy)])
+            ->andFilterWhere(['like', new \yii\db\Expression('LOWER(JSON_EXTRACT(detail_payment, "$.trx_id"))'), $this->trxIdVendor])
+            ->andFilterWhere(['>=', 'created_at', $this->createTimeStart])
+            ->andFilterWhere(['<', 'created_at', $this->createTimeEnd]);;
 
         return $dataProvider;
     }
