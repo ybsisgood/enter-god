@@ -1230,7 +1230,7 @@ class EdcController extends Controller
             $device = $model->detail_payment['device'] ?? '';
             $createdBy = $model->detail_info['changelog']['created_by'] ?? '';
             $paymentDate = $model->payment_at ?? '';
-            $totalPayment = $model->total_payment;
+            $totalPayment = $model->total;
             $mdr = $model->mdr;
             if($model->subtotal < 1)
             {
