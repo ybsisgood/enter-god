@@ -1138,6 +1138,17 @@ class EdcController extends Controller
 
     public function actionPayment()
     {
+        $searchModel = new PaymentsSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, Payments::STATUS_WAITING_PAYMENT);
+
+        return $this->render('payment', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionPaymentCompleted()
+    {
         $dr = isset($_GET['PaymentsSearch']['createTimeRange']) ? $_GET['PaymentsSearch']['createTimeRange'] : '';
 
         $sd = null;
@@ -1158,18 +1169,7 @@ class EdcController extends Controller
         }
 
         $searchModel = new PaymentsSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, Payments::STATUS_WAITING_PAYMENT, $ed, $sd);
-
-        return $this->render('payment', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
-        ]);
-    }
-
-    public function actionPaymentCompleted()
-    {
-        $searchModel = new PaymentsSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, Payments::STATUS_PAID);
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams, Payments::STATUS_PAID, $sd, $ed);
 
         return $this->render('payment-completed', [
             'searchModel' => $searchModel,
