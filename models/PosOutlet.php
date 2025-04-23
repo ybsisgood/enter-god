@@ -12,10 +12,10 @@ use Yii;
  * @property string $code
  * @property string $slug_url
  * @property string|null $address
- * @property string|null $location
+ * @property array|string|null $location
  * @property string|null $hwid_server
  * @property string|null $secret_key
- * @property string|null $ip_whitelist
+ * @property array|string|null $ip_whitelist
  * @property int|null $slave_id
  * @property int|null $sync_slave
  * @property int $status 0: Inactive, 1: Active, 2: Draft, 3: Completed, 4: Deleted, 5: Maintenance
@@ -61,10 +61,10 @@ class PosOutlet extends \yii\db\ActiveRecord
             [['name', 'code', 'status'], 'required', 'on' => self::SCENARIO_CREATE],
             [['name', 'code', 'status'], 'required', 'on' => self::SCENARIO_UPDATE],
             [['address', 'location_lat', 'location_lng'], 'string'],
-            [['location', 'detail_info'], 'safe'],
+            [['location', 'detail_info', 'ip_whitelist'], 'safe'],
             [['slave_id', 'sync_slave'], 'default', 'value' => null],
             [['slave_id', 'sync_slave', 'status'], 'integer'],
-            [['name', 'slug_url', 'hwid_server', 'secret_key', 'ip_whitelist'], 'string', 'max' => 255],
+            [['name', 'slug_url', 'hwid_server', 'secret_key'], 'string', 'max' => 255],
             [['code'], 'string', 'max' => 10],
             ['status', 'in', 'range' => [self::STATUS_INACTIVE, self::STATUS_ACTIVE, self::STATUS_DELETED]],
         ];

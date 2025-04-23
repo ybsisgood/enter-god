@@ -105,12 +105,14 @@ class PosOutletController extends Controller
     {
         $model = new PosOutlet();
         $model->scenario = PosOutlet::SCENARIO_CREATE;
-
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->validate()) {
                 $model->secret_key = Yii::$app->security->generateRandomString();
                 if(!empty($_POST['PosOutlet']['ip_whitelist'])){
-                    $model->ip_whitelist = implode(',', $_POST['PosOutlet']['ip_whitelist']);
+                    $ipInput = $_POST['PosOutlet']['ip_whitelist'];
+                    $model->ip_whitelist = json_encode($ipInput);
+                } else {
+                    $model->ip_whitelist = null;
                 }
                 $detail_info = GlobalFunction::changeLogCreate();
                 $loc = [];
@@ -152,12 +154,15 @@ class PosOutletController extends Controller
             Yii::$app->session->setFlash('error', 'Pos Outlet already deleted.');
             return $this->redirect(Yii::$app->request->referrer);
         }
-
+        $model->ip_whitelist = json_decode($model->ip_whitelist ?? null);
         $model->location_lat = $model->location['lat'] ?? null;
         $model->location_lng = $model->location['lng'] ?? null;
         if ($this->request->isPost && $model->load($this->request->post()) && $model->validate()) {
             if(!empty($_POST['PosOutlet']['ip_whitelist'])){
-                $model->ip_whitelist = implode(',', $_POST['PosOutlet']['ip_whitelist']);
+                $ipInput = $_POST['PosOutlet']['ip_whitelist'];
+                $model->ip_whitelist = json_encode($ipInput);
+            } else {
+                $model->ip_whitelist = null;
             }
             $detail_info = GlobalFunction::changeLogUpdate($model->detail_info);
             $loc = [];

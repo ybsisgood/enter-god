@@ -4,14 +4,13 @@ namespace app\models\search;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\PosSession;
+use app\models\PosTableLayout;
 
 /**
- * PosSessionSearch represents the model behind the search form of `app\models\PosSession`.
+ * PosTableLayoutSearch represents the model behind the search form of `app\models\PosTableLayout`.
  */
-class PosSessionSearch extends PosSession
+class PosTableLayoutSearch extends PosTableLayout
 {
-
     public $outletName;
     /**
      * {@inheritdoc}
@@ -19,8 +18,8 @@ class PosSessionSearch extends PosSession
     public function rules()
     {
         return [
-            [['id', 'outlet_id', 'status', 'slave_id', 'sync_slave'], 'integer'],
-            [['name', 'open_date', 'closed_date', 'outletName'], 'safe'],
+            [['id', 'outlet_id', 'layout', 'status'], 'integer'],
+            [['name', 'positioning', 'detail_info', 'outletName'], 'safe'],
         ];
     }
 
@@ -40,31 +39,23 @@ class PosSessionSearch extends PosSession
      *
      * @return ActiveDataProvider
      */
-    public function search($params, $deleted = false)
+    public function search($params, $deleted = false, $outletID = null)
     {
-        $query = PosSession::find();
-        $query->joinWith('outlet');
-        if($deleted){
-            $query->andWhere(['session.status' => PosSession::STATUS_DELETED]);
+        $query = PosTableLayout::find()->joinWith('outlet');
+        if($outletID) {
+            $query->andWhere(['outlet.id' => $outletID]);
+        }
+        if($deleted) {
+            $query->andWhere(['table_layout.status' => PosTableLayout::STATUS_DELETED]);
         } else {
-            $query->andWhere(['!=', 'session.status', PosSession::STATUS_DELETED]);
+            $query->andWhere(['!=', 'table_layout.status', PosTableLayout::STATUS_DELETED]);
         }
 
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => [
-                'attributes' => [
-                    'id' => ['default' => SORT_DESC],
-                ]
-            ]
         ]);
-
-        $dataProvider->sort->attributes['outletName'] = [
-            'asc' => ['outlet.name' => SORT_ASC],
-            'desc' => ['outlet.name' => SORT_DESC],
-        ];
 
         $this->load($params);
 
@@ -78,14 +69,13 @@ class PosSessionSearch extends PosSession
         $query->andFilterWhere([
             'id' => $this->id,
             'outlet_id' => $this->outlet_id,
-            'open_date' => $this->open_date,
-            'closed_date' => $this->closed_date,
-            'session.status' => $this->status,
-            'session.slave_id' => $this->slave_id,
-            'session.sync_slave' => $this->sync_slave,
+            'layout' => $this->layout,
+            'table_layout.status' => $this->status,
         ]);
 
         $query->andFilterWhere(['ilike', 'name', $this->name])
+            ->andFilterWhere(['ilike', 'positioning', $this->positioning])
+            ->andFilterWhere(['ilike', 'detail_info', $this->detail_info])
             ->andFilterWhere(['ilike', 'outlet.name', $this->outletName]);
 
         return $dataProvider;

@@ -15,11 +15,17 @@ $text = '';
 foreach ($model->detail_info['change_log'] ?? [] as $key => $value) {
     $text .= '<b>' . $key . '</b>: ' . $value . '<br>'; 
 }
+$ip_whitelist = '';
+foreach ($model->ip_whitelist ?? [] as $ip) {
+    $ip_whitelist .= $ip . ', ';
+}
+$ip_whitelist = rtrim($ip_whitelist, ', ');
 ?>
 <div class="pos-outlet-view">
     <p>
         <?= Html::a('Back', ['index'], ['class' => 'btn btn-primary btn-sm waves-effect waves-light']) ?>
         <?= Html::a('Update', ['update', 'id' => $model->id, 'slug_url' => $model->slug_url], ['class' => 'btn btn-info btn-sm waves-effect waves-light']) ?>
+        <?= Html::a('List Table Layout', ['pos-table-layout/index', 'outletID' => $model->id], ['class' => 'btn btn-success btn-sm waves-effect waves-light']) ?>
         <?= Html::a('Delete', ['delete', 'id' => $model->id], [
             'class' => 'btn btn-danger btn-sm waves-effect waves-light',
             'data' => [
@@ -45,7 +51,10 @@ foreach ($model->detail_info['change_log'] ?? [] as $key => $value) {
                             'location_lng',
                             'hwid_server',
                             'secret_key',
-                            'ip_whitelist',
+                            [
+                                'label' => 'IP Whitelist',
+                                'value' => $ip_whitelist,
+                            ],
                             'slave_id',
                             // 'sync_slave',
                             [

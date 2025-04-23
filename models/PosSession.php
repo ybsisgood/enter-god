@@ -81,7 +81,7 @@ class PosSession extends \yii\db\ActiveRecord
         return new \app\models\query\SessionQuery(get_called_class());
     }
 
-    public function getPosOutlet()
+    public function getOutlet()
     {
         return $this->hasOne(PosOutlet::className(), ['id' => 'outlet_id']);
     }
