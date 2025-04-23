@@ -3,6 +3,7 @@ $params = YII_ENV_DEV ? require __DIR__ . '/params_local.php': require __DIR__ .
 $db = YII_ENV_DEV ? require __DIR__ . '/db_local.php': require __DIR__ . '/db.php';
 $dbsso = YII_ENV_DEV ? require __DIR__ . '/db_sso_local.php': require __DIR__ . '/db_sso.php';
 $dbedc = YII_ENV_DEV ? require __DIR__ . '/db_edc_local.php': require __DIR__ . '/db_edc.php';
+$dbpos = YII_ENV_DEV ? require __DIR__ . '/db_pos_local.php': require __DIR__ . '/db_pos.php';
 
 $config = [
     'id' => 'basic'.$params['code-id'],
@@ -64,6 +65,7 @@ $config = [
         'db' => $db,
         'db_sso' => $dbsso,
         'db_edc' => $dbedc,
+        'db_pos' => $dbpos,
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
@@ -81,6 +83,10 @@ $config = [
                 'apps/permissions/<seo_url:[\w\-]+>' => 'apps/permissions',
                 'apps/view-permissions/<id:\d+>/<code_permissions:[\w\-]+>' => 'apps/view-permissions',
                 'apps/update-permissions/<id:\d+>/<code_permissions:[\w\-]+>' => 'apps/update-permissions',
+                'pos-outlet/view/<id:\d+>/<slug_url:[\w\-]+>' => 'pos-outlet/view',
+                'pos-outlet/update/<id:\d+>/<slug_url:[\w\-]+>' => 'pos-outlet/update',
+                'pos-catalog/view/<id:\d+>/<slug_url:[\w\-]+>' => 'pos-catalog/view',
+                'pos-catalog/update/<id:\d+>/<slug_url:[\w\-]+>' => 'pos-catalog/update',
                 // 'gallery/view/<seo_url:[\w\-]+>' => 'gallery/view', // contoh
                 
             ],

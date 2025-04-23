@@ -56,6 +56,19 @@ use ybsisgood\modules\UserManagement\models\User;
                     </ul>
                 </li>
                 <?php endif; ?>
+                <?php if (User::hasRole('admin') || User::hasPermission('posAccess')):?>
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect">
+                    <i class="bx bx-store"></i>
+                    <span key="t-pos-menu">POS</span>
+                    </a>
+                    <ul class="sub-menu" aria-expanded="true">
+                        <li><a href="<?= Url::toRoute(['/pos-outlet']) ?>" key="t-list-outlet">List Outlet</a></li>
+                        <li><a href="<?= Url::toRoute(['/pos-catalog']) ?>" key="t-list-catalog">List Catalog</a></li>
+                        <li><a href="<?= Url::toRoute(['/pos-session']) ?>" key="t-list-session">List Session</a></li>
+                    </ul>
+                </li>
+                <?php endif; ?>
                 <?php if (User::hasRole('admin') || User::hasPermission('userAccess') || User::hasPermission('roleAccess')):?>
                 <li class="menu-title" key="t-user-management">User Management</li>
                 <li>

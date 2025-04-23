@@ -17,6 +17,8 @@ use Ikimea\Browser\Browser;
  */
 class GlobalFunction extends Component {
 
+    const SYNC_SLAVE = 1;
+
     public function getUserName($id) {
         $user = User::find()->where(['id' => $id])->one();
         if (!$user) {
